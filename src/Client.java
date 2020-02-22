@@ -34,7 +34,8 @@ public class Client {
             String fileName = args[3];
             switch (operation) {
                 case "-u":
-                        os.println("1");
+                //Request r = new Request()
+                        os.println("1"); //os.printlin(r.getHeader())
                         protocol.sendFile(new File(fileName));
                         break;
                 case "-d":
