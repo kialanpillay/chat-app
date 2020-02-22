@@ -35,12 +35,13 @@ public class Server{
 
             } catch (Exception e) {
                 System.err.println("Error in connection attempt.");
+                break;
             }
         }
 
         //serverSocket.close();
         //System.out.println("FileShare Server stopped");
-
+        in.close();
 
     }
 }

@@ -1,8 +1,6 @@
 package src;
 
 import java.net.*;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.*;
@@ -11,7 +9,6 @@ public class Connection implements Runnable{
     
     private Socket clientSocket;
     private BufferedReader in = null;
-    private static Scanner scan;
 
     public Connection(Socket client) {
         this.clientSocket = client;
@@ -22,7 +19,6 @@ public class Connection implements Runnable{
         try {
             in = new BufferedReader(new InputStreamReader(
                     clientSocket.getInputStream()));
-            scan = new Scanner(System.in);
             String option = "";
             while ((option = in.readLine()) != "Q") {
                 switch (option) {
