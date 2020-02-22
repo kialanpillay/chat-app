@@ -11,6 +11,7 @@ public class Client {
     private static Socket socket;
     private static String fileName;
     private static Scanner in;
+    private static PrintStream os;
 
     public static void main(String[] args) throws IOException {
         try {
@@ -39,9 +40,11 @@ public class Client {
 
                 switch (Integer.parseInt(option)) {
                     case 1:
+                        os.println("1");
                         sendFile();
                         break;
                     case 2:
+                        os.println("2");
                         System.err.print("Enter file name: ");
                         fileName = in.nextLine();
                         receiveFile(fileName);
@@ -105,7 +108,7 @@ public class Client {
 
             System.out.println("File "+fileName+" received from Server.");
         } catch (IOException ex) {
-            Logger.getLogger(Application.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }

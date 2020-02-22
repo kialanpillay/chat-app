@@ -1,16 +1,18 @@
 package src;
 
 import java.net.*;
-import java.util.logging.Level;
+import java.util.*;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.io.*;
 
-public class Application implements Runnable{
+public class Connection implements Runnable{
     
     private Socket clientSocket;
     private BufferedReader in = null;
+    private static Scanner scan;
 
-    public Application(Socket client) {
+    public Connection(Socket client) {
         this.clientSocket = client;
     }
 
@@ -19,21 +21,20 @@ public class Application implements Runnable{
         try {
             in = new BufferedReader(new InputStreamReader(
                     clientSocket.getInputStream()));
-            String clientSelection;
-            while ((clientSelection = in.readLine()) != null) {
-                switch (clientSelection) {
-                    case "1":
+            scan = new Scanner(System.in);
+            String option = "";
+            while ((option = scan.nextLine()) != "Q") {
+                switch (Integer.parseInt(option)) {
+                    case 1:
                         receiveFile();
                         break;
-                    case "2":
+                    case 2:
                         String outGoingFileName;
-                        while ((outGoingFileName = in.readLine()) != null) {
+                        while ((outGoingFileName = scan.nextLine()) != null) {
                             sendFile(outGoingFileName);
                         }
-
                         break;
                     default:
-                        System.out.println("Incorrect command received.");
                         break;
                 }
                 in.close();
@@ -41,7 +42,7 @@ public class Application implements Runnable{
             }
 
         } catch (IOException ex) {
-            Logger.getLogger(Application.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -71,7 +72,7 @@ public class Application implements Runnable{
 
     public void sendFile(String fileName) {
         try {
-            //handle file read
+
             File myFile = new File(fileName);
             byte[] mybytearray = new byte[(int) myFile.length()];
 
@@ -82,10 +83,8 @@ public class Application implements Runnable{
             DataInputStream dis = new DataInputStream(bis);
             dis.readFully(mybytearray, 0, mybytearray.length);
 
-            //handle file send over socket
             OutputStream os = clientSocket.getOutputStream();
 
-            //Sending file name and file size to the server
             DataOutputStream dos = new DataOutputStream(os);
             dos.writeUTF(myFile.getName());
             dos.writeLong(mybytearray.length);
