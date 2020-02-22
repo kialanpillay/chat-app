@@ -12,12 +12,10 @@ public class Protocol {
         this.socket = socket;
     }
 
-    public void sendFile(String fileName) {
+    public void sendFile(File file) {
         try {
 
-            File file = new File(fileName);
             byte[] dataBytes = new byte[(int) file.length()];
-
             FileInputStream fis = new FileInputStream(file);
             BufferedInputStream bis = new BufferedInputStream(fis);
             DataInputStream dis = new DataInputStream(bis);
@@ -31,7 +29,7 @@ public class Protocol {
             dos.writeLong(dataBytes.length);
             dos.write(dataBytes, 0, dataBytes.length);
             dos.flush();
-            System.out.println("File " + fileName + " sent to Server.");
+            System.out.println("File " + file.getName() + " sent to Server.");
             dis.close();
         } catch (Exception e) {
             System.err.println("File does not exist!");
@@ -63,12 +61,13 @@ public class Protocol {
     public void listFiles() {
         System.out.println("Available Files");
         System.out.println("---------------");
-        BufferedReader reader;
         try {
             DataInputStream clientData = new DataInputStream(socket.getInputStream());
-            System.out.println(clientData.readUTF());
-            //reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            //System.out.println(reader.readLine());
+            long size = clientData.readLong();
+            byte[] data = new byte[(int)size];
+            clientData.readFully(data);
+            String str= new String(data,"UTF-8");
+            System.out.println(str);
         } catch (IOException e) {
             System.err.print(e);
         }

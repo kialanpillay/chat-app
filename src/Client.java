@@ -13,10 +13,11 @@ public class Client {
 
     public static void main(String[] args) throws IOException {
         port = Integer.parseInt(args[1]);
+        operation = args[2];
         try {
             //socket = new Socket("localhost", port);
             InetAddress address = InetAddress.getByName(args[0]);
-            socket = new Socket(address, port);
+            socket = new Socket("localhost", port);
             protocol = new Protocol(socket);
         } catch (Exception e) {
             System.err.println("Cannot connect to the server, try again later.");
@@ -34,10 +35,11 @@ public class Client {
             switch (operation) {
                 case "-u":
                         os.println("1");
-                        protocol.sendFile(fileName);
+                        protocol.sendFile(new File(fileName));
                         break;
                 case "-d":
                         os.println("2");
+                        os.println(fileName);
                         protocol.receiveFile(fileName);
                         break;
             }

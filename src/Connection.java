@@ -1,6 +1,7 @@
 package src;
 
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -30,7 +31,7 @@ public class Connection implements Runnable{
                         break;
                     case "2":
                         String outGoingFileName;
-                        while ((outGoingFileName = scan.nextLine()) != null) {
+                        while ((outGoingFileName = in.readLine()) != null) {
                             sendFile(outGoingFileName);
                         }
                         break;
@@ -81,7 +82,6 @@ public class Connection implements Runnable{
 
             FileInputStream fis = new FileInputStream(file);
             BufferedInputStream bis = new BufferedInputStream(fis);
-            //bis.read(mybytearray, 0, mybytearray.length);
 
             DataInputStream dis = new DataInputStream(bis);
             dis.readFully(dataBytes, 0, dataBytes.length);
@@ -102,15 +102,23 @@ public class Connection implements Runnable{
 
     public void listFiles() {
         try {
-            OutputStream os = clientSocket.getOutputStream();
-            DataOutputStream dos = new DataOutputStream(os);
-            for(int i = 0; i < Server.fileNames.size(); i ++){
-                dos.writeUTF(Server.fileNames.get(i) + "\n");
+
+            String list = "";
+            for(int i = 0; i < Server.fileNames.size(); i++){
+                list+=Server.fileNames.get(i)+"\n";
             }
+            
+            byte[] dataBytes = list.getBytes("UTF-8");
+            OutputStream os = clientSocket.getOutputStream();
+
+            DataOutputStream dos = new DataOutputStream(os);
+            dos.writeLong(dataBytes.length);
+            dos.write(dataBytes, 0, dataBytes.length);
             dos.flush();
-            System.out.println("List of files sent to client");
+            System.out.println("List of files sent to client.");
+
         } catch (Exception e) {
-            System.err.println("Error in retrieving files!");
+            System.err.println("No files exist on server!");
         } 
     }
 }
