@@ -12,6 +12,6 @@
 * Execute ```java src/Server``` in the first tab.
 * In the second tab, the general format is ```java src/Client [IP Address] [Port Number] [-Flag] [File]```:
     * ```java src/Client 127.0.0.1 8080 -u yourfile.txt``` to upload a file.
-    * ```java src/Client 127.0.0.1 8080 -u yourfile.txt``` to download a file.
+    * ```java src/Client 127.0.0.1 8080 -d yourfile.txt``` to download a file.
     * ```java src/Client 127.0.0.1 8080 -l``` to query the server for stored files.
     * Note you should be able to specify just the file name if the file is in the current directory, otherwise specify an **absolute** path.
