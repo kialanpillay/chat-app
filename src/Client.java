@@ -17,7 +17,7 @@ public class Client {
         try {
             //socket = new Socket("localhost", port);
             InetAddress address = InetAddress.getByName(args[0]);
-            socket = new Socket("localhost", port);
+            socket = new Socket(address, port);
             protocol = new Protocol(socket);
         } catch (Exception e) {
             System.err.println("Cannot connect to the server, try again later.");

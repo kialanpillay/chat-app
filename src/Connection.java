@@ -103,11 +103,11 @@ public class Connection implements Runnable{
             for(int i = 0; i < Server.fileNames.size(); i++){
                 list+=Server.fileNames.get(i)+"\n";
             }
-            
+
             byte[] dataBytes = list.getBytes("UTF-8");
             OutputStream os = clientSocket.getOutputStream();
-
             DataOutputStream dos = new DataOutputStream(os);
+            
             dos.writeLong(dataBytes.length);
             dos.write(dataBytes, 0, dataBytes.length);
             dos.flush();
