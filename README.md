@@ -10,7 +10,7 @@
 * Open two seperate terminal tabs.
 * ``cd ..``
 * Execute ```java src/Server``` in the first tab.
-* In the second tab, the general format of the command is ```java srcClient [IP Address] [Port Number] [-Flag] [File Name]```:
+* In the second tab, the general format of the command is ```java src/Client [IP Address] [Port Number] [-Flag] [File]```:
     * ```java src/Client 127.0.0.1 8080 -u yourfile.txt``` to upload a file.
     * ```java src/Client 127.0.0.1 8080 -u yourfile.txt``` to download a file.
     * ```java src/Client 127.0.0.1 8080 -l``` to query the server for stored files.
