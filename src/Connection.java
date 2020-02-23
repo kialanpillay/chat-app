@@ -69,7 +69,7 @@ public class Connection implements Runnable {
         } catch (IOException ex) {
             Message errorAcknowledge = new Message("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"ERROR ACKNOWLEDGED");
             ps.println(errorAcknowledge.getHeader());
-            ps.println(errorAcknowledge.getMessage());
+            ps.println(errorAcknowledge.getBody());
             System.err.println("Client error. Connection closed.");
         }
     }
@@ -98,7 +98,7 @@ public class Connection implements Runnable {
         } catch (Exception e) {
             Message notFound = new Message("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"404 Not Found");
             ps.println(notFound.getHeader());
-            ps.println(notFound.getMessage());
+            ps.println(notFound.getBody());
             System.err.println("File does not exist!");
 
         } 

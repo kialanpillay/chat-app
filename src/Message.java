@@ -14,7 +14,7 @@ public class Message{
         return header;
     }
 
-    public String getMessage(){
+    public String getBody(){
         return body;
     }
 }

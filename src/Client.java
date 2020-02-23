@@ -25,7 +25,7 @@ public class Client {
                 InetAddress address = InetAddress.getByName(args[0]);
                 socket = new Socket(address, port);
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                os = new PrintStream(socket.getOutputStream())
+                os = new PrintStream(socket.getOutputStream());
                 protocol = new Protocol(socket, in, os);
             } catch (Exception e) {
                 System.err.println("Cannot connect to the server, try again later.");
@@ -42,7 +42,9 @@ public class Client {
                 String fileName = args[3];
                 switch (operation) {
                     case "-u":
-                    //Request r = new Request()
+                            Message init = new Message("CTRL|1|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE UPLOAD");
+                            os.println(init.getHeader());
+                            os.println(init.getBody());
                             os.println("1"); //os.printlin(r.getHeader())
                             protocol.sendFile(new File(fileName));
                             break;
