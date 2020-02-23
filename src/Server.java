@@ -9,12 +9,13 @@ public class Server{
     private final static int PORT = 8080;
     private static Socket clientSocket = null;
     private static ServerSocket serverSocket = null;
-    public static ArrayList<String>fileNames = new ArrayList<>();
     public static void main (String [] args ) throws IOException {
       
         try {
             serverSocket = new ServerSocket(PORT);
             System.out.println("FileShare Server started at port " + PORT);
+            File folder = new File("server");
+            folder.mkdir();
         } catch (Exception e) {
             System.err.println("Port already in use.");
             System.exit(1);

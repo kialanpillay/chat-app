@@ -51,7 +51,7 @@ public class Connection implements Runnable{
             DataInputStream clientData = new DataInputStream(clientSocket.getInputStream());
 
             String fileName = clientData.readUTF();
-            OutputStream output = new FileOutputStream(fileName);
+            OutputStream output = new FileOutputStream("server/"+fileName);
             long size = clientData.readLong();
             byte[] buffer = new byte[1024];
             while (size > 0 && (bytesRead = clientData.read(buffer, 0, (int) Math.min(buffer.length, size))) != -1) {
@@ -61,7 +61,6 @@ public class Connection implements Runnable{
             clientData.close();
             output.close();
             System.out.println("File "+fileName+" received from client at port " + clientSocket.getPort());
-            Server.fileNames.add(fileName);
         } catch (IOException ex) {
             System.err.println("Client error. Connection closed.");
         }
@@ -73,7 +72,7 @@ public class Connection implements Runnable{
             File file = new File(fileName);
             byte[] dataBytes = new byte[(int)file.length()];
 
-            FileInputStream fis = new FileInputStream(file);
+            FileInputStream fis = new FileInputStream("server/"+fileName);
             BufferedInputStream bis = new BufferedInputStream(fis);
 
             DataInputStream dis = new DataInputStream(bis);
@@ -97,9 +96,14 @@ public class Connection implements Runnable{
         try {
 
             String list = "";
-            for(int i = 0; i < Server.fileNames.size(); i++){
-                list+=Server.fileNames.get(i)+"\n";
-            }
+            File folder = new File("server");
+                File[]fileList = folder.listFiles();
+                for (File file: fileList){
+                    if(!file.getName().startsWith(".")){
+                        list+=file.getName() + "\n";
+                    }
+                    
+                }
 
             byte[] dataBytes = list.getBytes("UTF-8");
             OutputStream os = clientSocket.getOutputStream();
