@@ -63,7 +63,7 @@ public class Connection implements Runnable{
             }
             clientData.close();
             output.close();
-            System.out.println("File "+fileName+" received from client.");
+            System.out.println("File "+fileName+" received from client at port " + clientSocket.getPort());
             Server.fileNames.add(fileName);
         } catch (IOException ex) {
             System.err.println("Client error. Connection closed.");
@@ -89,7 +89,7 @@ public class Connection implements Runnable{
             dos.writeLong(dataBytes.length);
             dos.write(dataBytes, 0, dataBytes.length);
             dos.flush();
-            System.out.println("File "+fileName+" sent to client.");
+            System.out.println("File "+fileName+" sent to client at port " + clientSocket.getPort());
             dis.close();
         } catch (Exception e) {
             System.err.println("File does not exist!");
@@ -111,7 +111,7 @@ public class Connection implements Runnable{
             dos.writeLong(dataBytes.length);
             dos.write(dataBytes, 0, dataBytes.length);
             dos.flush();
-            System.out.println("List of files sent to client.");
+            System.out.println("List of stored files sent to client at port " + clientSocket.getPort());
 
         } catch (Exception e) {
             System.err.println("No files exist on server!");

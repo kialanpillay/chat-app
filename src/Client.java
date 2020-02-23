@@ -20,7 +20,6 @@ public class Client {
             port = Integer.parseInt(args[1]);
             operation = args[2];
             try {
-                //socket = new Socket("localhost", port);
                 InetAddress address = InetAddress.getByName(args[0]);
                 socket = new Socket(address, port);
                 protocol = new Protocol(socket);
@@ -39,8 +38,7 @@ public class Client {
                 String fileName = args[3];
                 switch (operation) {
                     case "-u":
-                    //Request r = new Request()
-                            os.println("1"); //os.printlin(r.getHeader())
+                            os.println("1"); 
                             protocol.sendFile(new File(fileName));
                             break;
                     case "-d":
