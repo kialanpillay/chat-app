@@ -19,9 +19,8 @@ public class Connection implements Runnable{
         try {
             in = new BufferedReader(new InputStreamReader(
                     clientSocket.getInputStream()));
-            String option = "";
-            while ((option = in.readLine()) != "Q") {
-                switch (option) {
+            String operation = in.readLine();
+                switch (operation) {
                     case "1":
                         receiveFile();
                         break;
@@ -37,9 +36,7 @@ public class Connection implements Runnable{
                     default:
                         break;
                 }
-
-                break;
-            }
+            
             in.close();
 
         } catch (IOException ex) {
