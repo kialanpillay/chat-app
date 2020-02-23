@@ -110,11 +110,13 @@ public class Connection implements Runnable {
 
             OutputStream os = clientSocket.getOutputStream();
             DataOutputStream dos = new DataOutputStream(os);
+            dos.writeUTF("DAT|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort());
             dos.writeUTF(file.getName());
             dos.writeLong(dataBytes.length);
             dos.write(dataBytes, 0, dataBytes.length);
             dos.flush();
 
+            //Get receipt message from client
             String hResponse = in.readLine();
             String bResponse = in.readLine();
             if(hResponse.contains("CTRL|2") && bResponse.contains("DOWNLOAD RECEIVED")){

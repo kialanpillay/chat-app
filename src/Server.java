@@ -14,6 +14,7 @@ public class Server{
         try {
             serverSocket = new ServerSocket(PORT);
             System.out.println("FileShare Server started at port " + PORT);
+            System.out.println("Press Q to quit after a client has connected.");
             File file = new File("server");
             file.mkdir();
         } catch (Exception e) {
@@ -22,16 +23,6 @@ public class Server{
         }
 
         Scanner in = new Scanner(System.in);
-        String quit;
-        /*
-        quit = in.next();
-        
-        if(quit.equals("Q") || quit.equals("q")){
-            serverSocket.close();
-            System.out.println("FileShare Server stopped");
-            in.close();
-            System.exit(0);
-        }*/
                
         while (true) {
             try {
@@ -46,7 +37,16 @@ public class Server{
                 System.err.println("Error in connection attempt.");
                 break;
             }
+            finally{
+                if(in.next().equals("Q")){
+                    serverSocket.close();
+                System.out.println("FileShare Server stopped");
+                in.close();
+                System.exit(0);
+                }
+            }
         }
+        
 
         
 

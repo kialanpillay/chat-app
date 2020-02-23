@@ -1,7 +1,6 @@
 package src;
 
 import java.net.*;
-
 import java.io.*;
 
 public class Protocol {
@@ -67,6 +66,8 @@ public class Protocol {
             try {
                 int bytesRead = 0;
                 DataInputStream clientData = new DataInputStream(socket.getInputStream());  
+                String header = clientData.readUTF(); //retrieve header from client
+                assert(header.contains("DAT|2")); //assert that we are receiving file data
                 fileName = clientData.readUTF();
                 OutputStream output = new FileOutputStream(("received_from_server_" + fileName));
                 long size = clientData.readLong();
