@@ -10,7 +10,6 @@ public class Client {
     private static String operation;
     private static Protocol protocol;
     private static PrintStream os;
-    private static BufferedReader in = null;
 
     public static void main(String[] args) throws IOException {
 
@@ -24,15 +23,13 @@ public class Client {
                 //socket = new Socket("localhost", port);
                 InetAddress address = InetAddress.getByName(args[0]);
                 socket = new Socket(address, port);
-                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                os = new PrintStream(socket.getOutputStream());
-                protocol = new Protocol(socket, in, os);
+                protocol = new Protocol(socket);
             } catch (Exception e) {
                 System.err.println("Cannot connect to the server, try again later.");
                 System.exit(1);
             }
 
-            ;
+            os = new PrintStream(socket.getOutputStream());
 
 
             System.out.println("FileShare Application");
@@ -42,9 +39,7 @@ public class Client {
                 String fileName = args[3];
                 switch (operation) {
                     case "-u":
-                            Message init = new Message("CTRL|1|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE UPLOAD");
-                            os.println(init.getHeader());
-                            os.println(init.getBody());
+                    //Request r = new Request()
                             os.println("1"); //os.printlin(r.getHeader())
                             protocol.sendFile(new File(fileName));
                             break;
