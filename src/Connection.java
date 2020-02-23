@@ -57,6 +57,7 @@ public class Connection implements Runnable {
                 }
             
             in.close();
+            ps.close();
 
         } catch (IOException ex) {
             Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
@@ -116,7 +117,7 @@ public class Connection implements Runnable {
 
             String hResponse = in.readLine();
             String bResponse = in.readLine();
-            if(hResponse.contains("CTRL|2") && bResponse.contains("DOWNLOAD RECEIVIED")){
+            if(hResponse.contains("CTRL|2") && bResponse.contains("DOWNLOAD RECEIVED")){
                 System.out.println("File sent to client at port " + clientSocket.getPort());
             }
             
