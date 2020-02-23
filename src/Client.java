@@ -35,7 +35,6 @@ public class Client {
 
             System.out.println("FileShare Application");
             System.out.println("=====================");
-
             if(!operation.equals("-l")){
                 String fileName = args[3];
                 switch (operation) {
@@ -63,6 +62,7 @@ public class Client {
         Message m = new Message(header,body);
         os.println(m.getHeader());
         os.println(m.getBody());
+        os.flush();
     }
 
     

@@ -1,7 +1,12 @@
 package src;
 
 import java.net.*;
+import java.nio.*;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.util.logging.Logger;
+
+
 import java.util.logging.Level;
 import java.io.*;
 
@@ -23,32 +28,32 @@ public class Connection implements Runnable {
 
             String headerRequest = in.readLine(); //Retrieve operation code from header
             String operation = headerRequest.substring(4,5);//Retrieve operation code from header
-            //String bodyRequest = in.readLine();
-            //assert(bodyRequest.contains("INITIATE")); //Check if body of message contains initiate operation.
+            String bodyRequest = in.readLine();
+            assert(bodyRequest.contains("INITIATE")); //Check if body of message contains initiate operation.
 
 
                 switch (operation) {
                     case "1":
-                        //sendMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"UPLOAD OPERATION ACKNOWLEDGED");
+                        sendMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"UPLOAD OPERATION ACKNOWLEDGED");
                         receiveFile();
-                        //sendMessage("CMD|0|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
+                        sendMessage("CMD|0|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                         break;
                     case "2":
-                        //sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"DOWNLOAD OPERATION ACKNOWLEDGED");
+                        sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"DOWNLOAD OPERATION ACKNOWLEDGED");
                         String fileName = "";
-                        fileName = in.readLine();
-                        //if(hFile.contains("DAT|2")){
-                            //fileName = in.readLine();
-                            //System.out.println(fileName);
-                        //}
-                        //sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"FILE NAME RECEIVED");
+                        String hFile = in.readLine();
+                        if(hFile.contains("DAT|2")){
+                            fileName = in.readLine();
+
+                        }
+                        sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"FILE NAME RECEIVED");
                         sendFile(fileName);
-                        //sendMessage("CMD|0|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
+                        sendMessage("CMD|0|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                         break;
                     case "3":
-                        //sendMessage("CTRL|3|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"QUERY OPERATION ACKNOWLEDGED");
+                        sendMessage("CTRL|3|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"QUERY OPERATION ACKNOWLEDGED");
                         listFiles();
-                        //sendMessage("CMD|0|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
+                        sendMessage("CMD|0|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                         break;
                     default:
                         break;
@@ -68,7 +73,7 @@ public class Connection implements Runnable {
             DataInputStream clientData = new DataInputStream(clientSocket.getInputStream());
 
             String fileName = clientData.readUTF();
-            OutputStream output = new FileOutputStream(fileName);
+            OutputStream output = new FileOutputStream("server/"+fileName);
             long size = clientData.readLong();
             byte[] buffer = new byte[1024];
             while (size > 0 && (bytesRead = clientData.read(buffer, 0, (int) Math.min(buffer.length, size))) != -1) {
@@ -76,22 +81,20 @@ public class Connection implements Runnable {
                 size -= bytesRead;
             }
 
-            //sendMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"UPLOAD RECEIVED");
+            sendMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"UPLOAD RECEIVED");
             System.out.println("File " + fileName + " received from client.");
 
-            Server.fileNames.add(fileName);
-            System.out.println(Server.fileNames.size());
             clientData.close();
             output.close();
 
             
         } catch (IOException ex) {
-            //String hError = in.readLine();
-            //String bError = in.readLine();
-            //if(hError.contains("CTRL|1") && bError.contains("ERROR")){
-                //sendMessage("CMD|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"ERROR RECEVIED");
-            //    System.err.println("Client error. Connection closed at port " + clientSocket.getPort());
-            //}
+            /*String hError = in.readLine();
+            String bError = in.readLine();
+            if(hError.contains("CTRL|1") && bError.contains("ERROR")){
+                sendMessage("CMD|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"ERROR RECEIVED");
+                System.err.println("Client error. Connection closed at port " + clientSocket.getPort());
+            }*/
             System.err.println("Client error. Connection closed at port " + clientSocket.getPort());
         }
     }
@@ -122,7 +125,6 @@ public class Connection implements Runnable {
             
             dis.close();
         } catch (Exception e) {
-            System.out.println(e);
             sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"404 NOT FOUND");
             System.err.println("404 NOT FOUND");
 
@@ -130,17 +132,16 @@ public class Connection implements Runnable {
     }
 
     public void listFiles() {
-        
         try {
                 String list = "";
-                System.out.println(Server.fileNames.size());
-                if(Server.fileNames.size()==0){
-                    list+="No Files Stored on Server";
-                }
-                else{
-                    for(int i = 0; i < Server.fileNames.size(); i++){
-                        list+=Server.fileNames.get(i)+"\n";
+
+                File folder = new File("server");
+                File[]fileList = folder.listFiles();
+                for (File file: fileList){
+                    if(!file.getName().startsWith(".")){
+                        list+=file.getName() + "\n";
                     }
+                    
                 }
                 byte[] dataBytes = list.getBytes("UTF-8");
                 OutputStream os = clientSocket.getOutputStream();
@@ -149,14 +150,14 @@ public class Connection implements Runnable {
                 dos.write(dataBytes, 0, dataBytes.length);
                 dos.flush();
                 
-                //if(in.readLine().contains("CTRL|3") && in.readLine().contains("QUERY RECEIVED")){
+                if(in.readLine().contains("CTRL|3") && in.readLine().contains("QUERY RECEIVED")){
                     System.out.println("List of files sent to client at port " + clientSocket.getPort());
-                //}
+                }
                 
         
 
         } catch (Exception e) {
-            //sendMessage("CTRL|3|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"404");
+            sendMessage("CTRL|3|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"404");
             System.err.println("Error retrieving files!");
         } 
     }
@@ -165,5 +166,6 @@ public class Connection implements Runnable {
         Message m = new Message(header,body);
         ps.println(m.getHeader());
         ps.println(m.getBody());
+        ps.flush();
     }
 }
