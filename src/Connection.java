@@ -5,10 +5,11 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.*;
 
-public class Connection implements Runnable{
-    
+public class Connection implements Runnable {
+
     private Socket clientSocket;
     private BufferedReader in = null;
+    private static PrintStream ps;
 
     public Connection(Socket client) {
         this.clientSocket = client;
@@ -17,8 +18,8 @@ public class Connection implements Runnable{
     @Override
     public void run() {
         try {
-            in = new BufferedReader(new InputStreamReader(
-                    clientSocket.getInputStream()));
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            ps = new PrintStream(clientSocket.getOutputStream());
             String option = "";
             while ((option = in.readLine()) != "Q") {
                 switch (option) {
@@ -63,9 +64,12 @@ public class Connection implements Runnable{
             }
             clientData.close();
             output.close();
-            System.out.println("File "+fileName+" received from client.");
+            System.out.println("File " + fileName + " received from client.");
             Server.fileNames.add(fileName);
         } catch (IOException ex) {
+            Message errorAcknowledge = new Message("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"ERROR ACKNOWLEDGED");
+            ps.println(errorAcknowledge.getHeader());
+            ps.println(errorAcknowledge.getMessage());
             System.err.println("Client error. Connection closed.");
         }
     }
@@ -74,7 +78,7 @@ public class Connection implements Runnable{
         try {
 
             File file = new File(fileName);
-            byte[] dataBytes = new byte[(int)file.length()];
+            byte[] dataBytes = new byte[(int) file.length()];
 
             FileInputStream fis = new FileInputStream(file);
             BufferedInputStream bis = new BufferedInputStream(fis);
@@ -89,10 +93,14 @@ public class Connection implements Runnable{
             dos.writeLong(dataBytes.length);
             dos.write(dataBytes, 0, dataBytes.length);
             dos.flush();
-            System.out.println("File "+fileName+" sent to client.");
+            System.out.println("File " + fileName + " sent to client.");
             dis.close();
         } catch (Exception e) {
+            Message notFound = new Message("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"404 Not Found");
+            ps.println(notFound.getHeader());
+            ps.println(notFound.getMessage());
             System.err.println("File does not exist!");
+
         } 
     }
 
@@ -107,7 +115,7 @@ public class Connection implements Runnable{
             byte[] dataBytes = list.getBytes("UTF-8");
             OutputStream os = clientSocket.getOutputStream();
             DataOutputStream dos = new DataOutputStream(os);
-            
+
             dos.writeLong(dataBytes.length);
             dos.write(dataBytes, 0, dataBytes.length);
             dos.flush();

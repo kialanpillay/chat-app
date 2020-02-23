@@ -10,6 +10,7 @@ public class Client {
     private static String operation;
     private static Protocol protocol;
     private static PrintStream os;
+    private static BufferedReader in = null;
 
     public static void main(String[] args) throws IOException {
 
@@ -23,13 +24,15 @@ public class Client {
                 //socket = new Socket("localhost", port);
                 InetAddress address = InetAddress.getByName(args[0]);
                 socket = new Socket(address, port);
-                protocol = new Protocol(socket);
+                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                os = new PrintStream(socket.getOutputStream())
+                protocol = new Protocol(socket, in, os);
             } catch (Exception e) {
                 System.err.println("Cannot connect to the server, try again later.");
                 System.exit(1);
             }
 
-            os = new PrintStream(socket.getOutputStream());
+            ;
 
 
             System.out.println("FileShare Application");

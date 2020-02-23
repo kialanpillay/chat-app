@@ -1,13 +1,13 @@
 package src;
 
-public class Request{
+public class Message{
 
     private String header;
-    private String message;
+    private String body;
 
-    public Request(String header, String message){
+    public Message(String header, String body){
         this.header = header;
-        this.message = message;
+        this.body = body;
     }
 
     public String getHeader(){
@@ -15,6 +15,6 @@ public class Request{
     }
 
     public String getMessage(){
-        return message;
+        return body;
     }
 }

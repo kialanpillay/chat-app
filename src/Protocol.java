@@ -7,9 +7,14 @@ import java.util.logging.*;
 public class Protocol {
 
     private Socket socket;
+    private BufferedReader inStream;
+    private PrintStream ps;
 
-    public Protocol(Socket socket) {
+
+    public Protocol(Socket socket, BufferedReader in, PrintStream ps) {
         this.socket = socket;
+        this.inStream = in;
+        this.ps = ps;
     }
 
     public void sendFile(File file) {
@@ -23,15 +28,19 @@ public class Protocol {
 
             OutputStream os = this.socket.getOutputStream();
 
-            // Sending file name and file size to the server
             DataOutputStream dos = new DataOutputStream(os);
             dos.writeUTF(file.getName());
             dos.writeLong(dataBytes.length);
             dos.write(dataBytes, 0, dataBytes.length);
             dos.flush();
+
+            Message complete = new Message("CTRL|1|" + socket.getInetAddress() + "|" + socket.getPort(),"OPERATION COMPLETE");
+            ps.println(complete);
             System.out.println("File " + file.getName() + " sent to Server.");
             dis.close();
         } catch (Exception e) {
+            Message error = new Message("CTRL|1|" + socket.getInetAddress() + "|" + socket.getPort(),"FATAL ERROR");
+            ps.println(error);
             System.err.println("File does not exist!");
         }
     }
