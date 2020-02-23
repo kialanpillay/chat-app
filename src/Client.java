@@ -32,8 +32,6 @@ public class Client {
                 System.exit(1);
             }
 
-            ;
-
 
             System.out.println("FileShare Application");
             System.out.println("=====================");
@@ -42,25 +40,33 @@ public class Client {
                 String fileName = args[3];
                 switch (operation) {
                     case "-u":
-                            Message init = new Message("CTRL|1|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE UPLOAD");
-                            os.println(init.getHeader());
-                            os.println(init.getBody());
-                            os.println("1"); //os.printlin(r.getHeader())
+                            //sendMessage("CMD|1|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE UPLOAD");
+                            os.println("CMD|1|");
                             protocol.sendFile(new File(fileName));
                             break;
                     case "-d":
-                            os.println("2");
-                            os.println(fileName);
+                        os.println("CMD|2|");
+                        os.println(fileName);
+                            //sendMessage("CMD|2|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE DOWNLOAD");
+                            //sendMessage("DAT|2|" + socket.getInetAddress() + "|" + socket.getPort(),fileName);
                             protocol.receiveFile(fileName);
                             break;
                 }
             }
             else{
-                os.println("3");
+                os.println("CMD|3|");
+                //sendMessage("CMD|3|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE QUERY");
                 protocol.listFiles();
             }
+            //sendMessage("CMD|0|" + socket.getInetAddress() + "|" + socket.getPort(),"CONNECTION TERMINATED");
             socket.close();
     }
+    }
+
+    public static void sendMessage(String header, String body){
+        Message m = new Message(header,body);
+        os.println(m.getHeader());
+        os.println(m.getBody());
     }
 
     

@@ -20,27 +20,40 @@ public class Connection implements Runnable {
         try {
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             ps = new PrintStream(clientSocket.getOutputStream());
-            String option = "";
-            while ((option = in.readLine()) != "Q") {
-                switch (option) {
+
+            String headerRequest = in.readLine(); //Retrieve operation code from header
+            String operation = headerRequest.substring(4,5);//Retrieve operation code from header
+            //String bodyRequest = in.readLine();
+            //assert(bodyRequest.contains("INITIATE")); //Check if body of message contains initiate operation.
+
+
+                switch (operation) {
                     case "1":
+                        //sendMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"UPLOAD OPERATION ACKNOWLEDGED");
                         receiveFile();
+                        //sendMessage("CMD|0|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                         break;
                     case "2":
-                        String outGoingFileName;
-                        while ((outGoingFileName = in.readLine()) != null) {
-                            sendFile(outGoingFileName);
-                        }
+                        //sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"DOWNLOAD OPERATION ACKNOWLEDGED");
+                        String fileName = "";
+                        fileName = in.readLine();
+                        //if(hFile.contains("DAT|2")){
+                            //fileName = in.readLine();
+                            //System.out.println(fileName);
+                        //}
+                        //sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"FILE NAME RECEIVED");
+                        sendFile(fileName);
+                        //sendMessage("CMD|0|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                         break;
                     case "3":
+                        //sendMessage("CTRL|3|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"QUERY OPERATION ACKNOWLEDGED");
                         listFiles();
+                        //sendMessage("CMD|0|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                         break;
                     default:
                         break;
                 }
-
-                break;
-            }
+            
             in.close();
 
         } catch (IOException ex) {
@@ -48,7 +61,7 @@ public class Connection implements Runnable {
         }
     }
 
-    public void receiveFile() {
+    public void receiveFile() throws IOException {
         try {
             int bytesRead;
 
@@ -62,15 +75,24 @@ public class Connection implements Runnable {
                 output.write(buffer, 0, bytesRead);
                 size -= bytesRead;
             }
+
+            //sendMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"UPLOAD RECEIVED");
+            System.out.println("File " + fileName + " received from client.");
+
+            Server.fileNames.add(fileName);
+            System.out.println(Server.fileNames.size());
             clientData.close();
             output.close();
-            System.out.println("File " + fileName + " received from client.");
-            Server.fileNames.add(fileName);
+
+            
         } catch (IOException ex) {
-            Message errorAcknowledge = new Message("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"ERROR ACKNOWLEDGED");
-            ps.println(errorAcknowledge.getHeader());
-            ps.println(errorAcknowledge.getBody());
-            System.err.println("Client error. Connection closed.");
+            //String hError = in.readLine();
+            //String bError = in.readLine();
+            //if(hError.contains("CTRL|1") && bError.contains("ERROR")){
+                //sendMessage("CMD|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"ERROR RECEVIED");
+            //    System.err.println("Client error. Connection closed at port " + clientSocket.getPort());
+            //}
+            System.err.println("Client error. Connection closed at port " + clientSocket.getPort());
         }
     }
 
@@ -82,47 +104,66 @@ public class Connection implements Runnable {
 
             FileInputStream fis = new FileInputStream(file);
             BufferedInputStream bis = new BufferedInputStream(fis);
-
             DataInputStream dis = new DataInputStream(bis);
             dis.readFully(dataBytes, 0, dataBytes.length);
 
             OutputStream os = clientSocket.getOutputStream();
-
             DataOutputStream dos = new DataOutputStream(os);
             dos.writeUTF(file.getName());
             dos.writeLong(dataBytes.length);
             dos.write(dataBytes, 0, dataBytes.length);
             dos.flush();
-            System.out.println("File " + fileName + " sent to client.");
+
+            //String hResponse = in.readLine();
+            //String bResponse = in.readLine();
+            //if(hResponse.contains("CTRL|2") && bResponse.contains("DOWNLOAD RECEIVIED")){
+                System.out.println("File sent to client at port " + clientSocket.getPort());
+           // }
+            
             dis.close();
         } catch (Exception e) {
-            Message notFound = new Message("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"404 Not Found");
-            ps.println(notFound.getHeader());
-            ps.println(notFound.getBody());
-            System.err.println("File does not exist!");
+            System.out.println(e);
+            //sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"404 NOT FOUND");
+            System.err.println("404 NOT FOUND");
 
         } 
     }
 
     public void listFiles() {
+        
         try {
-
-            String list = "";
-            for(int i = 0; i < Server.fileNames.size(); i++){
-                list+=Server.fileNames.get(i)+"\n";
-            }
-
-            byte[] dataBytes = list.getBytes("UTF-8");
-            OutputStream os = clientSocket.getOutputStream();
-            DataOutputStream dos = new DataOutputStream(os);
-
-            dos.writeLong(dataBytes.length);
-            dos.write(dataBytes, 0, dataBytes.length);
-            dos.flush();
-            System.out.println("List of files sent to client.");
+                String list = "";
+                System.out.println(Server.fileNames.size());
+                if(Server.fileNames.size()==0){
+                    list+="No Files Stored on Server";
+                }
+                else{
+                    for(int i = 0; i < Server.fileNames.size(); i++){
+                        list+=Server.fileNames.get(i)+"\n";
+                    }
+                }
+                byte[] dataBytes = list.getBytes("UTF-8");
+                OutputStream os = clientSocket.getOutputStream();
+                DataOutputStream dos = new DataOutputStream(os);
+                dos.writeLong(dataBytes.length);
+                dos.write(dataBytes, 0, dataBytes.length);
+                dos.flush();
+                
+                //if(in.readLine().contains("CTRL|3") && in.readLine().contains("QUERY RECEIVED")){
+                    System.out.println("List of files sent to client at port " + clientSocket.getPort());
+                //}
+                
+        
 
         } catch (Exception e) {
-            System.err.println("No files exist on server!");
+            //sendMessage("CTRL|3|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"404");
+            System.err.println("Error retrieving files!");
         } 
+    }
+
+    public void sendMessage(String header, String body){
+        Message m = new Message(header,body);
+        ps.println(m.getHeader());
+        ps.println(m.getBody());
     }
 }
