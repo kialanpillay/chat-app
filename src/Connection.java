@@ -89,7 +89,7 @@ public class Connection implements Runnable{
             System.out.println("File "+fileName+" sent to client at port " + clientSocket.getPort());
             dis.close();
         } catch (Exception e) {
-            System.err.println("File does not exist!");
+            System.err.println("404 Not Found");
         } 
     }
 
@@ -111,7 +111,7 @@ public class Connection implements Runnable{
             System.out.println("List of stored files sent to client at port " + clientSocket.getPort());
 
         } catch (Exception e) {
-            System.err.println("No files exist on server!");
+            System.err.println("No files are stored on Server!");
         } 
     }
 }
