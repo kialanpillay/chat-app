@@ -14,14 +14,13 @@ public class Client {
 
     public static void main(String[] args) throws IOException {
 
-        if(args.length < 3){
+        if (args.length < 3) {
             System.out.println("Incorrect number of arguments!");
-        }
-        else{
+        } else {
             port = Integer.parseInt(args[1]);
             operation = args[2];
             try {
-                //socket = new Socket("localhost", port);
+                // socket = new Socket("localhost", port);
                 InetAddress address = InetAddress.getByName(args[0]);
                 socket = new Socket(address, port);
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -57,8 +56,8 @@ public class Client {
             //String hTerminate = in.readLine();
             //String bTerminate = in.readLine();
             //if(hTerminate.contains("CMD|0") && bTerminate.contains("TERMINATE")){
-                sendMessage("CMD|0|" + socket.getInetAddress() + "|" + socket.getPort(),"CONNECTION TERMINATED");
-                socket.close();
+            sendMessage("CMD|0|" + socket.getInetAddress() + "|" + socket.getPort(),"CONNECTION TERMINATED");
+            socket.close();
             //}
             
     }

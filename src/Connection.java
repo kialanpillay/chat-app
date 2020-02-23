@@ -11,7 +11,7 @@ public class Connection implements Runnable {
 
     private Socket clientSocket;
     private BufferedReader in = null;
-    private static PrintStream ps;
+    private PrintStream ps;
 
     public Connection(Socket client) {
         this.clientSocket = client;
@@ -53,11 +53,15 @@ public class Connection implements Runnable {
                         sendMessage("CMD|0|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                         break;
                     default:
+                        in.close();
+                        ps.close();
+                        clientSocket.close();
                         break;
                 }
             
             in.close();
             ps.close();
+            clientSocket.close();
 
         } catch (IOException ex) {
             Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
@@ -100,14 +104,13 @@ public class Connection implements Runnable {
     public void sendFile(String fileName) {
         try {
 
-            File file = new File(fileName);
+            File file = new File("server/"+fileName);
             byte[] dataBytes = new byte[(int) file.length()];
 
             FileInputStream fis = new FileInputStream(file);
             BufferedInputStream bis = new BufferedInputStream(fis);
             DataInputStream dis = new DataInputStream(bis);
             dis.readFully(dataBytes, 0, dataBytes.length);
-
             OutputStream os = clientSocket.getOutputStream();
             DataOutputStream dos = new DataOutputStream(os);
             dos.writeUTF("DAT|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort());
@@ -122,9 +125,9 @@ public class Connection implements Runnable {
             if(hResponse.contains("CTRL|2") && bResponse.contains("DOWNLOAD RECEIVED")){
                 System.out.println("File sent to client at port " + clientSocket.getPort());
             }
-            
             dis.close();
         } catch (Exception e) {
+            System.out.println(e);
             sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"404 NOT FOUND");
             System.err.println("404 NOT FOUND");
 

@@ -6,7 +6,7 @@ import java.util.*;
 
 public class Server{
     
-    private final static int PORT = 8080;
+    private final static int PORT = 9000;
     private static Socket clientSocket = null;
     private static ServerSocket serverSocket = null;
     public static void main (String [] args ) throws IOException {

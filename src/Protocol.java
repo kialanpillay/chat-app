@@ -46,10 +46,14 @@ public class Protocol {
                 }
 
                 dis.close();
+                ps.close();
+                inStream.close();
 
             } catch (Exception e) {
                 sendMessage("CTRL|1|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR");
                 System.err.println("Error uploading file!");
+                ps.close();
+                inStream.close();
             }
         }
     }
@@ -59,13 +63,11 @@ public class Protocol {
         String bAcknowledgment = inStream.readLine();
         String hFileName = inStream.readLine();
         String bFileName = inStream.readLine();
-
         if(hAcknowledgment.contains("CTRL|2") && bAcknowledgment.contains("ACKNOWLEDGED") &&
             hFileName.contains("CTRL|2") && bFileName.contains("RECEIVED")){
-
             try {
                 int bytesRead = 0;
-                DataInputStream clientData = new DataInputStream(socket.getInputStream());  
+                DataInputStream clientData = new DataInputStream(socket.getInputStream());
                 String header = clientData.readUTF(); //retrieve header from client
                 assert(header.contains("DAT|2")); //assert that we are receiving file data
                 fileName = clientData.readUTF();
@@ -80,6 +82,8 @@ public class Protocol {
                 System.out.println("File " + fileName + " received from Server.");
 
                 output.close();
+                ps.close();
+                inStream.close();
                 
             } catch (IOException ex) {
                 /*String hError = inStream.readLine();
@@ -89,6 +93,8 @@ public class Protocol {
                    
                 }*/
                 System.err.println("File does not exist on server!");
+                ps.close();
+                inStream.close();
             }
          }
     }
@@ -108,6 +114,8 @@ public class Protocol {
                 String str= new String(data,"UTF-8");
                 System.out.println(str);
                 sendMessage("CTRL|3|" + socket.getInetAddress() + "|" + socket.getPort(),"QUERY RECEIVED");
+                ps.close();
+                inStream.close();
             } catch (IOException e) {
                 String hError = inStream.readLine();
                 String bError = inStream.readLine();
@@ -115,6 +123,8 @@ public class Protocol {
                     sendMessage("CTRL|3|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR RECEIVED");
                 }
                 System.err.println("Error retrieving files from Server!");
+                ps.close();
+                inStream.close();
             }
             System.out.println("\n");
         }
