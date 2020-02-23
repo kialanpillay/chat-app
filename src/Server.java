@@ -15,7 +15,7 @@ public class Server{
             serverSocket = new ServerSocket(PORT);
             System.out.println("FileShare Server started at port " + PORT);
             File file = new File("server");
-            boolean bool = file.mkdir();
+            file.mkdir();
         } catch (Exception e) {
             System.err.println("Port already in use.");
             System.exit(1);
