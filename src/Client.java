@@ -54,12 +54,12 @@ public class Client {
                 protocol.listFiles();
             }
             //Receive Termination Command Message from Server
-            String hTerminate = in.readLine();
-            String bTerminate = in.readLine();
-            if(hTerminate.contains("CMD|0") && bTerminate.contains("TERMINATE")){
+            //String hTerminate = in.readLine();
+            //String bTerminate = in.readLine();
+            //if(hTerminate.contains("CMD|0") && bTerminate.contains("TERMINATE")){
                 sendMessage("CMD|0|" + socket.getInetAddress() + "|" + socket.getPort(),"CONNECTION TERMINATED");
                 socket.close();
-            }
+            //}
             
     }
     }
