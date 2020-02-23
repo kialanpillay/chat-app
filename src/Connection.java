@@ -114,16 +114,16 @@ public class Connection implements Runnable {
             dos.write(dataBytes, 0, dataBytes.length);
             dos.flush();
 
-            //String hResponse = in.readLine();
-            //String bResponse = in.readLine();
-            //if(hResponse.contains("CTRL|2") && bResponse.contains("DOWNLOAD RECEIVIED")){
+            String hResponse = in.readLine();
+            String bResponse = in.readLine();
+            if(hResponse.contains("CTRL|2") && bResponse.contains("DOWNLOAD RECEIVIED")){
                 System.out.println("File sent to client at port " + clientSocket.getPort());
-           // }
+            }
             
             dis.close();
         } catch (Exception e) {
             System.out.println(e);
-            //sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"404 NOT FOUND");
+            sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"404 NOT FOUND");
             System.err.println("404 NOT FOUND");
 
         } 

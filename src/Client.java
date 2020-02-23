@@ -40,22 +40,18 @@ public class Client {
                 String fileName = args[3];
                 switch (operation) {
                     case "-u":
-                            //sendMessage("CMD|1|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE UPLOAD");
-                            os.println("CMD|1|");
+                            sendMessage("CMD|1|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE UPLOAD");
                             protocol.sendFile(new File(fileName));
                             break;
                     case "-d":
-                        os.println("CMD|2|");
-                        os.println(fileName);
-                            //sendMessage("CMD|2|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE DOWNLOAD");
-                            //sendMessage("DAT|2|" + socket.getInetAddress() + "|" + socket.getPort(),fileName);
+                            sendMessage("CMD|2|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE DOWNLOAD");
+                            sendMessage("DAT|2|" + socket.getInetAddress() + "|" + socket.getPort(),fileName);
                             protocol.receiveFile(fileName);
                             break;
                 }
             }
             else{
-                os.println("CMD|3|");
-                //sendMessage("CMD|3|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE QUERY");
+                sendMessage("CMD|3|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE QUERY");
                 protocol.listFiles();
             }
             //sendMessage("CMD|0|" + socket.getInetAddress() + "|" + socket.getPort(),"CONNECTION TERMINATED");

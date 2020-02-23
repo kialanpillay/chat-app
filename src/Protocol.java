@@ -18,9 +18,9 @@ public class Protocol {
 
     public void sendFile(File file) throws IOException {
         
-        //String hAcknowledgment = inStream.readLine();
-        //String bAcknowledgment = inStream.readLine();
-        //if(hAcknowledgment.contains("CTRL|1") && bAcknowledgment.contains("ACKNOWLEDGED")){
+        String hAcknowledgment = inStream.readLine();
+        String bAcknowledgment = inStream.readLine();
+        if(hAcknowledgment.contains("CTRL|1") && bAcknowledgment.contains("ACKNOWLEDGED")){
      
             try {
                 byte[] dataBytes = new byte[(int) file.length()];
@@ -35,31 +35,32 @@ public class Protocol {
                 dos.write(dataBytes, 0, dataBytes.length);
                 dos.flush();
                 
-                //String hResponse = inStream.readLine(); //Store Header AND Message of Server Response
-                //String bResponse = inStream.readLine();
-                //if(hResponse.contains("CTRL|1") && bResponse.contains("UPLOAD RECEIVED")){
-                    //sendMessage("CTRL|1|" + socket.getInetAddress() + "|" + socket.getPort(),"UPLOAD OPERATION COMPLETE");
+                String hResponse = inStream.readLine(); //Store Header AND Message of Server Response
+                String bResponse = inStream.readLine();
+                if(hResponse.contains("CTRL|1") && bResponse.contains("UPLOAD RECEIVED")){
+                    sendMessage("CTRL|1|" + socket.getInetAddress() + "|" + socket.getPort(),"UPLOAD OPERATION COMPLETE");
                     System.out.println("File " + file.getName() + " sent to Server.");
-                //}
-                //else{
-                //    System.err.println("Error uploading file!");
-                //}
+                }
+                else{
+                    System.err.println("Error uploading file!");
+                }
 
                 dis.close();
 
             } catch (Exception e) {
-                //sendMessage("CTRL|1|" + socket.getInetAddress() + "|" + socket.getPort(),"FATAL ERROR");
+                sendMessage("CTRL|1|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR");
                 System.err.println("Error uploading file!");
             }
-        //}
+        }
     }
 
     public void receiveFile(String fileName) throws IOException {
-        //String hAcknowledgment = inStream.readLine();
-        //String bAcknowledgment = inStream.readLine();
-        //if(hAcknowledgment.contains("CTRL|2") && bAcknowledgment.contains("ACKNOWLEDGED")){
-            //String hRecevied = inStream.readLine();
-            //String bRecevied = inStream.readLine();
+        String hAcknowledgment = inStream.readLine();
+        String bAcknowledgment = inStream.readLine();
+        if(hAcknowledgment.contains("CTRL|2") && bAcknowledgment.contains("ACKNOWLEDGED")){
+            String hReceived = inStream.readLine();
+            String bReceived = inStream.readLine();
+            System.out.println(bReceived);
             try {
                 int bytesRead = 0;
                 DataInputStream clientData = new DataInputStream(socket.getInputStream());  
@@ -71,21 +72,21 @@ public class Protocol {
                     output.write(buffer, 0, bytesRead);
                     size -= bytesRead;
                 }
-                //sendMessage("CTRL|2|" + socket.getInetAddress() + "|" + socket.getPort(),"DOWNLOAD RECEIVIED");
+                sendMessage("CTRL|2|" + socket.getInetAddress() + "|" + socket.getPort(),"DOWNLOAD RECEIVED");
                 System.out.println("File " + fileName + " received from Server.");
 
                 output.close();
                 
             } catch (IOException ex) {
-                //String hError = inStream.readLine();
-                //String bError = inStream.readLine();
+                String hError = inStream.readLine();
+                String bError = inStream.readLine();
                 System.out.println(ex);
-                //if(hError.contains("CTRL|2") && bError.contains("404")){
-                //    sendMessage("CTRL|2|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR RECEIVED");
-                //   System.err.println("File does not exist on server!");
-                //}
+                if(hError.contains("CTRL|2") && bError.contains("404")){
+                    sendMessage("CTRL|2|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR RECEIVED");
+                   System.err.println("File does not exist on server!");
+                }
             }
-         //}
+         }
     }
 
     public void listFiles() throws IOException {
