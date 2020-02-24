@@ -50,14 +50,14 @@ public class Client {
             }
             else{
                 sendMessage("CMD|3|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE QUERY");
-                listFiles();
+                protocol.listFiles();
             }
             //Receive Termination Command Message from Server
             //String hTerminate = in.readLine();
             //String bTerminate = in.readLine();
             //if(hTerminate.contains("CMD|0") && bTerminate.contains("TERMINATE")){
-            sendMessage("CMD|0|" + socket.getInetAddress() + "|" + socket.getPort(),"CONNECTION TERMINATED");
-            socket.close();
+                sendMessage("CMD|0|" + socket.getInetAddress() + "|" + socket.getPort(),"CONNECTION TERMINATED");
+                socket.close();
             //}
             
     }
@@ -70,38 +70,6 @@ public class Client {
         os.flush();
     }
 
-    public static void listFiles() throws IOException {
-        String hAcknowledgment = in.readLine();
-        String bAcknowledgment = in.readLine();
-        if(hAcknowledgment.contains("CTRL|3") && bAcknowledgment.contains("ACKNOWLEDGED")){
-            System.out.println("Available Files");
-            System.out.println("---------------");
-
-            try {
-                DataInputStream clientData = new DataInputStream(socket.getInputStream());
-                long size = clientData.readLong();
-                byte[] data = new byte[(int)size];
-                clientData.readFully(data);
-                String str= new String(data,"UTF-8");
-                System.out.println(str);
-                sendMessage("CTRL|3|" + socket.getInetAddress() + "|" + socket.getPort(),"QUERY RECEIVED");
-                os.close();
-                in.close();
-            } catch (IOException e) {
-                System.out.println(e.getStackTrace());
-                //String hError = inStream.readLine();
-                //String bError = inStream.readLine();
-                //if(hError.contains("CTRL|3") && bError.contains("404")){
-                //    sendMessage("CTRL|3|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR RECEIVED");
-                //}
-                System.err.println("Error retrieving files from Server!");
-                os.close();
-                in.close();
-            }
-            System.out.println("\n");
-        }
-       
-    }
 
     
 }

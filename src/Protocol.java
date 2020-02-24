@@ -18,9 +18,9 @@ public class Protocol {
 
     public void sendFile(File file) throws IOException {
         
-        String hAcknowledgment = inStream.readLine();
-        String bAcknowledgment = inStream.readLine();
-        if(hAcknowledgment.contains("CTRL|1") && bAcknowledgment.contains("ACKNOWLEDGED")){
+        //String hAcknowledgment = inStream.readLine();
+        //String bAcknowledgment = inStream.readLine();
+        //if(hAcknowledgment.contains("CTRL|1") && bAcknowledgment.contains("ACKNOWLEDGED")){
      
             try {
                 byte[] dataBytes = new byte[(int) file.length()];
@@ -55,16 +55,16 @@ public class Protocol {
                 ps.close();
                 inStream.close();
             }
-        }
+        //}
     }
 
     public void receiveFile(String fileName) throws IOException {
-        String hAcknowledgment = inStream.readLine();
-        String bAcknowledgment = inStream.readLine();
-        String hFileName = inStream.readLine();
-        String bFileName = inStream.readLine();
-        if(hAcknowledgment.contains("CTRL|2") && bAcknowledgment.contains("ACKNOWLEDGED") &&
-            hFileName.contains("CTRL|2") && bFileName.contains("RECEIVED")){
+        //String hAcknowledgment = inStream.readLine();
+        //String bAcknowledgment = inStream.readLine();
+        //String hFileName = inStream.readLine();
+        //String bFileName = inStream.readLine();
+        //if(hAcknowledgment.contains("CTRL|2") && bAcknowledgment.contains("ACKNOWLEDGED") &&
+            //hFileName.contains("CTRL|2") && bFileName.contains("RECEIVED")){
             try {
                 int bytesRead = 0;
                 DataInputStream clientData = new DataInputStream(socket.getInputStream());
@@ -96,40 +96,38 @@ public class Protocol {
                 ps.close();
                 inStream.close();
             }
-         }
+         //}
     }
 
     public void listFiles() throws IOException {
-        String hAcknowledgment = inStream.readLine();
-        String bAcknowledgment = inStream.readLine();
-        if(hAcknowledgment.contains("CTRL|3") && bAcknowledgment.contains("ACKNOWLEDGED")){
+        //String hAcknowledgment = inStream.readLine();
+        //String bAcknowledgment = inStream.readLine();
+        //if(hAcknowledgment.contains("CTRL|3") && bAcknowledgment.contains("ACKNOWLEDGED")){
             System.out.println("Available Files");
             System.out.println("---------------");
 
             try {
                 DataInputStream clientData = new DataInputStream(socket.getInputStream());
-                //long size = clientData.readLong();
-                //byte[] data = new byte[(int)size];
-                //clientData.readFully(data);
-                //String str= new String(data,"UTF-8");
-                //System.out.println(str);
-                //sendMessage("CTRL|3|" + socket.getInetAddress() + "|" + socket.getPort(),"QUERY RECEIVED");
+                long size = clientData.readLong();
+                byte[] data = new byte[(int)size];
+                clientData.readFully(data);
+                String str= new String(data,"UTF-8");
+                System.out.println(str);
+                sendMessage("CTRL|3|" + socket.getInetAddress() + "|" + socket.getPort(),"QUERY RECEIVED");
                 ps.close();
                 inStream.close();
             } catch (IOException e) {
-                System.out.println(e.getMessage());
-                System.out.println(e.getStackTrace());
-                //String hError = inStream.readLine();
-                //String bError = inStream.readLine();
-                //if(hError.contains("CTRL|3") && bError.contains("404")){
-                //    sendMessage("CTRL|3|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR RECEIVED");
-                //}
+                String hError = inStream.readLine();
+                String bError = inStream.readLine();
+                if(hError.contains("CTRL|3") && bError.contains("404")){
+                    sendMessage("CTRL|3|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR RECEIVED");
+                }
                 System.err.println("Error retrieving files from Server!");
                 ps.close();
                 inStream.close();
             }
             System.out.println("\n");
-        }
+        //}
        
     }
 
