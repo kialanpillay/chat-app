@@ -2,18 +2,18 @@ package src;
 
 import java.io.*;
 import java.net.*;
-import java.util.*;
 
 public class Server{
     
-    private final static int PORT = 9000;
+    private static int port;
     private static Socket clientSocket = null;
     private static ServerSocket serverSocket = null;
     public static void main (String [] args ) throws IOException {
-      
+        
+        port = Integer.parseInt(args[0]);
         try {
-            serverSocket = new ServerSocket(PORT);
-            System.out.println("FileShare Server started at port " + PORT);
+            serverSocket = new ServerSocket(port);
+            System.out.println("FileShare Server started at port " + port);
 
             File file = new File("server");
             file.mkdir();
@@ -21,8 +21,6 @@ public class Server{
             System.err.println("Port already in use.");
             System.exit(1);
         }
-
-        Scanner in = new Scanner(System.in);
                
         while (true) {
             try {
@@ -37,14 +35,10 @@ public class Server{
                 System.err.println("Error in connection attempt.");
                 break;
             }
-            finally{
-
-            }
         }
         //TODO
         serverSocket.close();
         System.out.println("FileShare Server stopped");
-        in.close();
         System.exit(0);
 
     }
