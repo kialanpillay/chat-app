@@ -6,7 +6,7 @@ import java.util.*;
 
 public class Server{
     
-    private final static int PORT = 8080;
+    private final static int PORT = 9000;
     private static Socket clientSocket = null;
     private static ServerSocket serverSocket = null;
     public static void main (String [] args ) throws IOException {
@@ -14,15 +14,16 @@ public class Server{
         try {
             serverSocket = new ServerSocket(PORT);
             System.out.println("FileShare Server started at port " + PORT);
-            File folder = new File("server");
-            folder.mkdir();
+
+            File file = new File("server");
+            file.mkdir();
         } catch (Exception e) {
             System.err.println("Port already in use.");
             System.exit(1);
         }
 
         Scanner in = new Scanner(System.in);
-        
+               
         while (true) {
             try {
                 clientSocket = serverSocket.accept();
@@ -36,11 +37,15 @@ public class Server{
                 System.err.println("Error in connection attempt.");
                 break;
             }
-        }
+            finally{
 
-        //serverSocket.close();
-        //System.out.println("FileShare Server stopped");
+            }
+        }
+        //TODO
+        serverSocket.close();
+        System.out.println("FileShare Server stopped");
         in.close();
+        System.exit(0);
 
     }
 }

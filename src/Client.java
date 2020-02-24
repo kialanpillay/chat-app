@@ -10,51 +10,65 @@ public class Client {
     private static String operation;
     private static Protocol protocol;
     private static PrintStream os;
+    private static BufferedReader in = null;
 
     public static void main(String[] args) throws IOException {
 
-        if(args.length < 3){
+        if (args.length < 3) {
             System.out.println("Incorrect number of arguments!");
-        }
-        else{
+        } else {
             port = Integer.parseInt(args[1]);
             operation = args[2];
             try {
                 InetAddress address = InetAddress.getByName(args[0]);
                 socket = new Socket(address, port);
-                protocol = new Protocol(socket);
+                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                os = new PrintStream(socket.getOutputStream());
+                protocol = new Protocol(socket, in, os);
             } catch (Exception e) {
                 System.err.println("Cannot connect to the server, try again later.");
                 System.exit(1);
             }
 
-            os = new PrintStream(socket.getOutputStream());
-
 
             System.out.println("FileShare Application");
             System.out.println("=====================");
-
             if(!operation.equals("-l")){
                 String fileName = args[3];
                 switch (operation) {
                     case "-u":
-                            os.println("1"); 
+                            sendMessage("CMD|1|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE UPLOAD");
                             protocol.sendFile(new File(fileName));
                             break;
                     case "-d":
-                            os.println("2");
-                            os.println(fileName);
+                            sendMessage("CMD|2|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE DOWNLOAD");
+                            sendMessage("DAT|2|" + socket.getInetAddress() + "|" + socket.getPort(),fileName);
                             protocol.receiveFile(fileName);
                             break;
                 }
             }
             else{
-                os.println("3");
+                sendMessage("CMD|3|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE QUERY");
                 protocol.listFiles();
             }
+            createMessage("CMD|0|" + socket.getInetAddress() + "|" + socket.getPort(),"CONNECTION TERMINATED");
             socket.close();
+
+            
     }
     }
+
+    public static void sendMessage(String header, String body){
+        Message m = new Message(header,body);
+        os.println(m.getHeader());
+        os.println(m.getBody());
+        os.flush();
+    }
+
+    public static void createMessage(String header, String body){
+        Message m = new Message(header,body);
+    }
+
 
     
 }
