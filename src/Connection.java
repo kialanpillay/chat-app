@@ -153,14 +153,14 @@ public class Connection implements Runnable {
                 dos.write(dataBytes, 0, dataBytes.length);
                 dos.flush();
                 
-                if(in.readLine().contains("CTRL|3") && in.readLine().contains("QUERY RECEIVED")){
+                //if(in.readLine().contains("CTRL|3") && in.readLine().contains("QUERY RECEIVED")){
                     System.out.println("List of files sent to client at port " + clientSocket.getPort());
-                }
+                //}
                 
         
 
         } catch (Exception e) {
-            sendMessage("CTRL|3|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"404");
+            //sendMessage("CTRL|3|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"404");
             System.err.println("Error retrieving files!");
         } 
     }

@@ -108,20 +108,22 @@ public class Protocol {
 
             try {
                 DataInputStream clientData = new DataInputStream(socket.getInputStream());
-                long size = clientData.readLong();
-                byte[] data = new byte[(int)size];
-                clientData.readFully(data);
-                String str= new String(data,"UTF-8");
-                System.out.println(str);
-                sendMessage("CTRL|3|" + socket.getInetAddress() + "|" + socket.getPort(),"QUERY RECEIVED");
+                //long size = clientData.readLong();
+                //byte[] data = new byte[(int)size];
+                //clientData.readFully(data);
+                //String str= new String(data,"UTF-8");
+                //System.out.println(str);
+                //sendMessage("CTRL|3|" + socket.getInetAddress() + "|" + socket.getPort(),"QUERY RECEIVED");
                 ps.close();
                 inStream.close();
             } catch (IOException e) {
-                String hError = inStream.readLine();
-                String bError = inStream.readLine();
-                if(hError.contains("CTRL|3") && bError.contains("404")){
-                    sendMessage("CTRL|3|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR RECEIVED");
-                }
+                System.out.println(e.getMessage());
+                System.out.println(e.getStackTrace());
+                //String hError = inStream.readLine();
+                //String bError = inStream.readLine();
+                //if(hError.contains("CTRL|3") && bError.contains("404")){
+                //    sendMessage("CTRL|3|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR RECEIVED");
+                //}
                 System.err.println("Error retrieving files from Server!");
                 ps.close();
                 inStream.close();
