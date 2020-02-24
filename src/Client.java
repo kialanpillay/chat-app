@@ -52,13 +52,9 @@ public class Client {
                 sendMessage("CMD|3|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE QUERY");
                 protocol.listFiles();
             }
-            //Receive Termination Command Message from Server
-            //String hTerminate = in.readLine();
-            //String bTerminate = in.readLine();
-            //if(hTerminate.contains("CMD|0") && bTerminate.contains("TERMINATE")){
-                sendMessage("CMD|0|" + socket.getInetAddress() + "|" + socket.getPort(),"CONNECTION TERMINATED");
-                socket.close();
-            //}
+            createMessage("CMD|0|" + socket.getInetAddress() + "|" + socket.getPort(),"CONNECTION TERMINATED");
+            socket.close();
+
             
     }
     }
@@ -68,6 +64,10 @@ public class Client {
         os.println(m.getHeader());
         os.println(m.getBody());
         os.flush();
+    }
+
+    public static void createMessage(String header, String body){
+        Message m = new Message(header,body);
     }
 
 

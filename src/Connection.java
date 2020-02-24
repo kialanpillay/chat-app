@@ -36,21 +36,21 @@ public class Connection implements Runnable {
                         sendMessage("CMD|0|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                         break;
                     case "2":
-                        //sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"DOWNLOAD OPERATION ACKNOWLEDGED");
+                        createMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"DOWNLOAD OPERATION ACKNOWLEDGED");
                         String fileName = "";
                         String hFile = in.readLine();
                         if(hFile.contains("DAT|2")){
                             fileName = in.readLine();
 
                         }
-                        //sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"FILE NAME RECEIVED");
+                        createMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"FILE NAME RECEIVED");
                         sendFile(fileName);
-                        //sendMessage("CMD|0|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
+                        sendMessage("CMD|0|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                         break;
                     case "3":
-                        //sendMessage("CTRL|3|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"QUERY OPERATION ACKNOWLEDGED");
+                        createMessage("CTRL|3|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"QUERY OPERATION ACKNOWLEDGED");
                         listFiles();
-                        //sendMessage("CMD|0|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
+                        sendMessage("CMD|0|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                         break;
                     default:
                         in.close();
@@ -91,14 +91,9 @@ public class Connection implements Runnable {
 
             
         } catch (IOException ex) {
-            String hError = in.readLine();
-            String bError = in.readLine();
-            if(hError.contains("CTRL|1") && bError.contains("ERROR")){
-                sendMessage("CMD|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"ERROR RECEIVED");
-                System.err.println("Client error. Connection closed at port " + clientSocket.getPort());
-            }
-            in.readLine();
-            in.readLine(); //Get Client Error Acknowledgment;
+            sendMessage("CMD|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"ERROR RECEIVED");
+            System.err.println("Client error. Connection closed at port " + clientSocket.getPort());
+            
         }
     }
 
@@ -124,15 +119,13 @@ public class Connection implements Runnable {
             String hResponse = in.readLine();
             String bResponse = in.readLine();
             if(hResponse.contains("CTRL|2") && bResponse.contains("DOWNLOAD RECEIVED")){
+                createMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"DOWNLOAD OPERATION COMPLETE");
                 System.out.println("File sent to client at port " + clientSocket.getPort());
             }
             dis.close();
         } catch (Exception e) {
-            System.out.println(e);
             sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"404 NOT FOUND");
             System.err.println("404 NOT FOUND");
-            in.readLine();
-            in.readLine(); //Get Client Error Acknowledgment;
 
         } 
     }
@@ -159,6 +152,7 @@ public class Connection implements Runnable {
                 String hResponse = in.readLine();
                 String bResponse = in.readLine();
                 if(hResponse.contains("CTRL|3") && bResponse.contains("QUERY RECEIVED")){
+                    createMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"QUERY OPERATION COMPLETE");
                     System.out.println("List of files sent to client at port " + clientSocket.getPort());
                 }
                 
@@ -177,5 +171,9 @@ public class Connection implements Runnable {
         ps.println(m.getHeader());
         ps.println(m.getBody());
         ps.flush();
+    }
+
+    public void createMessage(String header, String body){
+        Message m = new Message(header,body);
     }
 }

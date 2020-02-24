@@ -18,9 +18,9 @@ public class Protocol {
 
     public void sendFile(File file) throws IOException {
         
-        //String hAcknowledgment = inStream.readLine();
-        //String bAcknowledgment = inStream.readLine();
-        //if(hAcknowledgment.contains("CTRL|1") && bAcknowledgment.contains("ACKNOWLEDGED")){
+        String hAcknowledgment = inStream.readLine();
+        String bAcknowledgment = inStream.readLine();
+        if(hAcknowledgment.contains("CTRL|1") && bAcknowledgment.contains("ACKNOWLEDGED")){
      
             try {
                 byte[] dataBytes = new byte[(int) file.length()];
@@ -38,7 +38,7 @@ public class Protocol {
                 String hResponse = inStream.readLine(); //Store Header AND Message of Server Response
                 String bResponse = inStream.readLine();
                 if(hResponse.contains("CTRL|1") && bResponse.contains("UPLOAD RECEIVED")){
-                    sendMessage("CTRL|1|" + socket.getInetAddress() + "|" + socket.getPort(),"UPLOAD OPERATION COMPLETE");
+                    createMessage("CTRL|1|" + socket.getInetAddress() + "|" + socket.getPort(),"UPLOAD OPERATION COMPLETE");
                     System.out.println("File " + file.getName() + " sent to Server.");
                 }
                 else{
@@ -55,16 +55,10 @@ public class Protocol {
                 ps.close();
                 inStream.close();
             }
-        //}
+        }
     }
 
     public void receiveFile(String fileName) throws IOException {
-        //String hAcknowledgment = inStream.readLine();
-        //String bAcknowledgment = inStream.readLine();
-        //String hFileName = inStream.readLine();
-        //String bFileName = inStream.readLine();
-        //if(hAcknowledgment.contains("CTRL|2") && bAcknowledgment.contains("ACKNOWLEDGED") &&
-            //hFileName.contains("CTRL|2") && bFileName.contains("RECEIVED")){
             try {
                 int bytesRead = 0;
                 DataInputStream clientData = new DataInputStream(socket.getInputStream());
@@ -86,23 +80,15 @@ public class Protocol {
                 inStream.close();
                 
             } catch (IOException ex) {
-                /*String hError = inStream.readLine();
-                String bError = inStream.readLine();
-                if(hError.contains("CTRL|2") && bError.contains("404")){
-                    sendMessage("CTRL|2|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR RECEIVED");
-                   
-                }*/
+                sendMessage("CTRL|2|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR RECEIVED");
                 System.err.println("File does not exist on server!");
                 ps.close();
                 inStream.close();
             }
-         //}
+
     }
 
     public void listFiles() throws IOException {
-        //String hAcknowledgment = inStream.readLine();
-        //String bAcknowledgment = inStream.readLine();
-        //if(hAcknowledgment.contains("CTRL|3") && bAcknowledgment.contains("ACKNOWLEDGED")){
             System.out.println("Available Files");
             System.out.println("---------------");
 
@@ -127,7 +113,6 @@ public class Protocol {
                 inStream.close();
             }
             System.out.println("\n");
-        //}
        
     }
 
@@ -136,6 +121,10 @@ public class Protocol {
         ps.println(m.getHeader());
         ps.println(m.getBody());
         ps.flush();
+    }
+
+    public void createMessage(String header, String body){
+        Message m = new Message(header,body);
     }
 
 }
