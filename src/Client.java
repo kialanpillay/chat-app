@@ -20,7 +20,6 @@ public class Client {
             port = Integer.parseInt(args[1]);
             operation = args[2];
             try {
-                // socket = new Socket("localhost", port);
                 InetAddress address = InetAddress.getByName(args[0]);
                 socket = new Socket(address, port);
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));

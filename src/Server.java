@@ -46,9 +46,6 @@ public class Server{
         System.out.println("FileShare Server stopped");
         in.close();
         System.exit(0);
-        
-
-        
 
     }
 }

@@ -161,8 +161,6 @@ public class Connection implements Runnable {
         } catch (Exception e) {
             sendMessage("CTRL|3|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"404");
             System.err.println("Error retrieving files!");
-            in.readLine();
-            in.readLine(); //Get Client Error Acknowledgment;
         } 
     }
 
