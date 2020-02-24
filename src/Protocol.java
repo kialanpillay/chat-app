@@ -51,7 +51,7 @@ public class Protocol {
 
             } catch (Exception e) {
                 sendMessage("CTRL|1|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR");
-                System.err.println("Error uploading file!");
+                System.err.println("Error uploading file!. File does not exist.");
                 ps.close();
                 inStream.close();
             }
