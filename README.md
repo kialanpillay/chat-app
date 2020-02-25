@@ -6,9 +6,11 @@
 ## Run
 * Navigate to the project source code directory. ```cd ~/file-sharing-app/src```
 * ```javac src/Connection.java && javac src/Server.java && javac src/Protocol.java && javac src/Client.java```
-(Will use the Makefile once it is properly configured)
+Alternatively
+* Navigate to the project directory. ```cd ~/file-sharing-app/```
+* ```make``` to automatically compile the source files.
 * Open two seperate terminal tabs.
-* ``cd ..``
+* ``cd ..`` (if compiling manually)
 * Execute ```java src/Server 8080``` in the first tab.
 * In the second tab, the general format is ```java src/Client <IP Address> <Port Number> <-Flag> <File> <Permission> [Key]```:
 * Note: [] indications option arguments, <> are mandatory arugments.
