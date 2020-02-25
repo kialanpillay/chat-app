@@ -1,3 +1,14 @@
+/***
+ * This class is responsible for creating a client that can communicate with a server at a specific IP address and port.
+ * Interaction with the Client is via the Command Line, with the extraction of the relevant arguments occurring in the main method. 
+ * The class has a number of private data members required for its functionality.
+ * The class creates a socket with the specified address and port, and after obtaining the InputStream of the server, communicates by sending 
+ * simple messages to the server. 
+ * Three possible operations are possible on the client side: Upload, Download and Query a File List.
+ * All errors are correctly handled, and the program gracefully exits after printing an appropriate message.
+ * @version 1.00
+ */
+
 package src;
 
 import java.io.*;

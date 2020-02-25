@@ -1,3 +1,11 @@
+/***
+ * This class is responsible for creating a Server that can accept a number of requests from different clients
+ * Once the server is running, it listens for incoming connections.
+ * On receipt of a client connection, it creates a new dedicated socket for communication with this particular client,
+ * and starts a new thread to handle any client requests
+ * @version 1.00
+ */
+
 package src;
 
 import java.io.*;
