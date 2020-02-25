@@ -20,19 +20,39 @@ public class Connection implements Runnable {
     @Override
     public void run() {
         try {
-            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            ps = new PrintStream(clientSocket.getOutputStream());
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));//input stream
+            ps = new PrintStream(clientSocket.getOutputStream());//send messages to client
 
             String headerRequest = in.readLine(); //Retrieve operation code from header
             String operation = headerRequest.substring(4,5);//Retrieve operation code from header
             String bodyRequest = in.readLine();
             assert(bodyRequest.contains("INITIATE")); //Check if body of message contains initiate operation.
+            
+            
 
 
                 switch (operation) {
                     case "1":
                         sendMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"UPLOAD OPERATION ACKNOWLEDGED");
                         receiveFile();
+
+                        String hPermission=in.readLine();
+                        String bPermission = in.readLine();
+                        Server.permissions.add(bPermission);
+                    
+                        createMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"FILE PERMISSION RECEIVED");
+                        if(bPermission.equalsIgnoreCase("Key")){
+                            String hKey = in.readLine();
+                            String bKey = in.readLine();
+                            Server.keys.add(bKey);
+
+                            createMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"FILE KEY RECEIVED ");
+                        }else{
+                            Server.keys.add("0");
+                            
+                        }
+                        
+                         
                         sendMessage("CMD|0|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                         break;
                     case "2":
@@ -68,13 +88,14 @@ public class Connection implements Runnable {
         }
     }
 
-    public void receiveFile() throws IOException {
+    public void receiveFile() throws IOException { //upload-saving key and permission above try
         try {
             int bytesRead;
 
             DataInputStream clientData = new DataInputStream(clientSocket.getInputStream());
 
             String fileName = clientData.readUTF();
+            Server.fileNames.add(fileName);
             OutputStream output = new FileOutputStream("server/"+fileName);
             long size = clientData.readLong();
             byte[] buffer = new byte[1024];
