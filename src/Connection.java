@@ -4,6 +4,9 @@ import java.net.*;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.logging.Logger;
+
+import sun.net.www.content.audio.basic;
+
 import java.util.logging.Level;
 import java.io.*;
 
@@ -46,14 +49,14 @@ public class Connection implements Runnable {
                             String bKey = in.readLine();
                             Server.keys.add(bKey);
 
-                            createMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"FILE KEY RECEIVED");
+                            createMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"FILE KEY RECEIVED ");
                         }else{
                             Server.keys.add("0");
-                            
+
                         }
                         
                          
-                        sendMessage("CMD|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
+                        sendMessage("CMD|0|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                         break;
                     case "2":
                         createMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"DOWNLOAD OPERATION ACKNOWLEDGED");
@@ -61,16 +64,48 @@ public class Connection implements Runnable {
                         String hFile = in.readLine();
                         if(hFile.contains("DAT|2")){
                             fileName = in.readLine();
+                            createMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"FILE NAME RECEIVED");
+                            String filePermission = checkPermission(fileName);
+                            
+                            if(filePermission.equalsIgnoreCase("KEY")){
+                                String hKey = in.readLine();
+                                String bKey = in.readLine();
+                                if(verifyKey(bKey, fileName)){
+                                   sendFile(fileName);
+                                   break;
+
+                                }else{
+                                    createMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"FILE KEY INCORRECT");
+                                    sendMessage("CMD|0|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
+                                break;
+
+                                }
+                                
+
+
+                            }
+                            else if(filePermission.equalsIgnoreCase("VIS")){
+                                createMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"FILE CAN'T BE DOWNLOADED");
+                                sendMessage("CMD|0|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
+                                break;
+                            }
+                            else{
+                                sendFile(fileName);
+                                sendMessage("CMD|0|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
+                                break;
+
+                            }
+                            
+
+                           
 
                         }
-                        createMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"FILE NAME RECEIVED");
-                        sendFile(fileName);
-                        sendMessage("CMD|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
-                        break;
+                        
+                        
                     case "3":
                         createMessage("CTRL|3|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"QUERY OPERATION ACKNOWLEDGED");
                         listFiles();
-                        sendMessage("CMD|3|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
+                        sendMessage("CMD|0|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                         break;
                     default:
                         in.close();
@@ -140,6 +175,12 @@ public class Connection implements Runnable {
             String hResponse = in.readLine();
             String bResponse = in.readLine();
             if(hResponse.contains("CTRL|2") && bResponse.contains("DOWNLOAD RECEIVED")){
+            
+
+
+
+
+
                 createMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"DOWNLOAD OPERATION COMPLETE");
                 System.out.println("File sent to client at port " + clientSocket.getPort());
             }
@@ -197,5 +238,41 @@ public class Connection implements Runnable {
 
     public void createMessage(String header, String body){
         Message m = new Message(header,body);
+    }
+
+    private int getFileIndex(String filename){
+       String FileName = filename;
+       int fileIndex=0;
+       for(int i =0; i<Server.fileNames.size();i++) {
+        if(Server.fileNames.get(i).equals(FileName)){
+           fileIndex = i;
+        }
+       
+       }
+       return fileIndex;
+
+    }
+
+    private String checkPermission(String filename){
+       String FileName = filename;
+       int fileIndex = getFileIndex(FileName);
+       String permission = Server.permissions.get(fileIndex);
+       return permission;
+
+
+    }
+    private boolean verifyKey(String key,String filename){
+    String clientKey = key;
+    String FileName = filename;
+    int keyIndex = getFileIndex(FileName);
+    String fileKey = Server.keys.get(keyIndex);
+    if(clientKey.equals(fileKey)){
+        return true;
+
+    }else{
+        return false;
+    }
+
+
     }
 }
