@@ -9,7 +9,11 @@ public class Server{
     private static Socket clientSocket = null;
     private static ServerSocket serverSocket = null;
     public static void main (String [] args ) throws IOException {
-        
+        if(args.length < 1){
+            System.out.println("Incorrect number of arguments!");
+            System.exit(1);
+        }
+        else{
         port = Integer.parseInt(args[0]);
         try {
             serverSocket = new ServerSocket(port);
@@ -40,6 +44,7 @@ public class Server{
         serverSocket.close();
         System.out.println("FileShare Server stopped");
         System.exit(0);
+    }
 
     }
 }
