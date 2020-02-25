@@ -37,18 +37,28 @@ public class Client {
             System.out.println("Server Port: " + port);
             if(!operation.equals("-l")){
                 String fileName = args[3];
+                String permission=args[4];
                 switch (operation) {
                     case "-u":
                             System.out.println("Upload Requested: " + fileName);
                             System.out.println("=====================");
-                            sendMessage("CMD|1|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE UPLOAD");
+                            sendMessage("CMD|1|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE UPLOAD");                       
                             protocol.sendFile(new File(fileName));
+                            sendMessage("DAT|1|" + socket.getInetAddress() + "|" + socket.getPort(),permission);
+                            if(args.length>5){
+                                String key = args[5];
+                                sendMessage("DAT|1|" + socket.getInetAddress() + "|" + socket.getPort(),key);
+                            }
                             break;
                     case "-d":
                             System.out.println("Download Requested: " + fileName);
                             System.out.println("=====================");
                             sendMessage("CMD|2|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE DOWNLOAD");
                             sendMessage("DAT|2|" + socket.getInetAddress() + "|" + socket.getPort(),fileName);
+                            if(args.length>4){
+                                String key = args[4];
+                                sendMessage("DAT|2|" + socket.getInetAddress() + "|" + socket.getPort(),key);    
+                            }
                             protocol.receiveFile(fileName);
                             break;
                 }
