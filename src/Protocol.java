@@ -62,7 +62,9 @@ public class Protocol {
         String hKey = inStream.readLine();
         assert(hKey.contains("CTRL|2"));
         String bKey = inStream.readLine();         
-        if(bKey.equals("VALID KEY")){
+        System.out.println(bKey);
+        
+        if(bKey.equals("VALID KEY")||bKey.equals("PUBLIC")){
             try {
                 int bytesRead = 0;
                 DataInputStream clientData = new DataInputStream(socket.getInputStream());
@@ -90,9 +92,15 @@ public class Protocol {
                 inStream.close();
             }
         }
-        else{
+        else if(bKey.equals("INVALID KEY")){
             sendMessage("CTRL|2|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR RECEIVED");
             System.err.println("Invalid access key for " + fileName + "!");
+            ps.close();
+            inStream.close();
+        }
+        else{
+            sendMessage("CTRL|2|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR RECEIVED");
+            System.err.println("Access violation for " + fileName + "!");
             ps.close();
             inStream.close();
         }

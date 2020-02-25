@@ -37,23 +37,25 @@ public class Client {
             System.out.println("Server Port: " + port);
             if(!operation.equals("-l")){
                 String fileName = args[3];
-                String permission=args[4];
-
-                if(permission.contains("public")){
-                    permission = "PUB";
-                }
-                else if(permission.contains("visible")){
-                    permission = "VIS";
-                }
-                else{
-                    permission = "KEY";
-                }
+                
 
 
                 switch (operation) {
                     case "-u":
                             System.out.println("Upload Requested: " + fileName);
                             System.out.println("=====================");
+
+                            String permission=args[4];
+                            if(permission.contains("public")){
+                                permission = "PUB";
+                            }
+                            else if(permission.contains("visible")){
+                                permission = "VIS";
+                            }
+                            else{
+                                permission = "KEY";
+                            }
+                            
                             sendMessage("CMD|1|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE UPLOAD");  
                             sendMessage("DAT|1|" + socket.getInetAddress() + "|" + socket.getPort(),permission);  
                             if(args.length>5 && permission.equals("KEY")){
