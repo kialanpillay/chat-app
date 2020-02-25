@@ -9,9 +9,9 @@ public class Server{
     private static int port;
     private static Socket clientSocket = null;
     private static ServerSocket serverSocket = null;
-    static ArrayList<String> fileNames = new ArrayList<String>();
-   public static ArrayList<String> permissions = new ArrayList<String>();
-   public static ArrayList<String> keys = new ArrayList<String>();
+    public static ArrayList<String> fileNames = new ArrayList<>();
+    public static ArrayList<String> permissions = new ArrayList<>();
+    public static ArrayList<String> keys = new ArrayList<>();
     public static void main (String [] args ) throws IOException {
         if(args.length < 1){
             System.out.println("Incorrect number of arguments!");
