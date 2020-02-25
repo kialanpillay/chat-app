@@ -37,7 +37,7 @@ public class Connection implements Runnable {
                 switch (operation) {
                     case "1":
                         sendMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"UPLOAD OPERATION ACKNOWLEDGED");
-                        receiveFile();
+                        
 
                         String hPermission=in.readLine();
                         assert(hPermission.contains("DAT|1"));
@@ -57,6 +57,7 @@ public class Connection implements Runnable {
                             Server.keys.add("0");
 
                         }
+                        receiveFile();
 
                         sendMessage("CMD|0|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                         break;
@@ -191,7 +192,7 @@ public class Connection implements Runnable {
                 File folder = new File("server");
                 File[]fileList = folder.listFiles();
                 for (File file: fileList){
-                    if(!file.getName().startsWith(".") && checkPermission(file.getName())!="KEY"){
+                    if(!file.getName().startsWith(".") && !checkPermission(file.getName()).equals("KEY")){
                         Date d = new Date(file.lastModified());
                         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss"); 
                         String permission = checkPermission(file.getName());

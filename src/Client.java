@@ -15,7 +15,7 @@ public class Client {
     public static void main(String[] args) throws IOException {
 
         if (args.length < 3) {
-            System.out.println("Incorrect number of arguments!");
+            System.err.println("Incorrect number of arguments!");
         } else {
             port = Integer.parseInt(args[1]);
             operation = args[2];
@@ -54,13 +54,14 @@ public class Client {
                     case "-u":
                             System.out.println("Upload Requested: " + fileName);
                             System.out.println("=====================");
-                            sendMessage("CMD|1|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE UPLOAD");                       
-                            protocol.sendFile(new File(fileName));
-                            sendMessage("DAT|1|" + socket.getInetAddress() + "|" + socket.getPort(),permission);
+                            sendMessage("CMD|1|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE UPLOAD");  
+                            sendMessage("DAT|1|" + socket.getInetAddress() + "|" + socket.getPort(),permission);  
                             if(args.length>5 && permission.equals("KEY")){
                                 String key = args[5];
                                 sendMessage("DAT|1|" + socket.getInetAddress() + "|" + socket.getPort(),key);
-                            }
+                            }       
+                            protocol.sendFile(new File(fileName));
+                            
                             break;
                     case "-d":
                             System.out.println("Download Requested: " + fileName);
