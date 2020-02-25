@@ -59,6 +59,10 @@ public class Protocol {
     }
 
     public void receiveFile(String fileName) throws IOException {
+        String hKey = inStream.readLine();
+        assert(hKey.contains("CTRL|2"));
+        String bKey = inStream.readLine();         
+        if(bKey.equals("VALID KEY")){
             try {
                 int bytesRead = 0;
                 DataInputStream clientData = new DataInputStream(socket.getInputStream());
@@ -81,11 +85,17 @@ public class Protocol {
                 
             } catch (IOException ex) {
                 sendMessage("CTRL|2|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR RECEIVED");
-                System.err.println("File does not exist on server!");
+                System.err.println("File " + fileName + " does not exist on server!");
                 ps.close();
                 inStream.close();
             }
-
+        }
+        else{
+            sendMessage("CTRL|2|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR RECEIVED");
+            System.err.println("Invalid access key for " + fileName + "!");
+            ps.close();
+            inStream.close();
+        }
     }
 
     public void listFiles() throws IOException {

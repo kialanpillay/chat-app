@@ -82,6 +82,7 @@ public class Connection implements Runnable {
                                 }
                                 else{
                                     sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"INVALID KEY");
+                                    System.err.println("Access Violation: " + clientSocket);
                                     sendMessage("CMD|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                                 break;
                                 }
@@ -89,6 +90,7 @@ public class Connection implements Runnable {
                             }
                             else if(filePermission.equalsIgnoreCase("VIS")){
                                 createMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"ACCESS DENIED");
+                                System.err.println("Access Violation: " + clientSocket);
                                 sendMessage("CMD|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                                 break;
                             }
@@ -175,12 +177,12 @@ public class Connection implements Runnable {
             if(hResponse.contains("CTRL|2") && bResponse.contains("DOWNLOAD RECEIVED")){
             
                 createMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"DOWNLOAD OPERATION COMPLETE");
-                System.out.println("File sent to client at port " + clientSocket.getPort());
+                System.out.println("File" + fileName + " sent to client at port " + clientSocket.getPort());
             }
             dis.close();
         } catch (Exception e) {
             sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"404 NOT FOUND");
-            System.err.println("404 NOT FOUND");
+            System.err.println("404 Error");
 
         } 
     }
