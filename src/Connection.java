@@ -52,12 +52,12 @@ public class Connection implements Runnable {
                             Server.keys.add(bKey);
 
                             createMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"FILE KEY RECEIVED ");
-                        }else{
+                        }
+                        else{
                             Server.keys.add("0");
 
                         }
-                        
-                         
+
                         sendMessage("CMD|0|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                         break;
                     case "2":
@@ -74,9 +74,10 @@ public class Connection implements Runnable {
                                 assert(hKey.contains("DAT|2"));
                                 String bKey = in.readLine();
                                 if(verifyKey(bKey, fileName)){
-                                   sendFile(fileName);
-                                   sendMessage("CMD|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
-                                   break;
+                                    sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"VALID KEY");
+                                    sendFile(fileName);
+                                    sendMessage("CMD|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
+                                    break;
                                 }
                                 else{
                                     sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"INVALID KEY");
@@ -190,10 +191,17 @@ public class Connection implements Runnable {
                 File folder = new File("server");
                 File[]fileList = folder.listFiles();
                 for (File file: fileList){
-                    if(!file.getName().startsWith(".")){
+                    if(!file.getName().startsWith(".") && checkPermission(file.getName())!="KEY"){
                         Date d = new Date(file.lastModified());
-                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");  
-                        String l = String.format("%-20s%-15s%-25s%-15s", file.getName(), file.length() + " B",sdf.format(d),"Public");
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss"); 
+                        String permission = checkPermission(file.getName());
+                        if(permission.equals("PUB")){
+                            permission = "Public";
+                        } 
+                        else{
+                            permission = "Visible";
+                        }
+                        String l = String.format("%-20s%-15s%-25s%-15s", file.getName(), file.length() + " B",sdf.format(d), permission);
                         list+=l + " " + "\n";
                     }
                     
