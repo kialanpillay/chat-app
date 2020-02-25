@@ -1,9 +1,9 @@
 package src;
 
 import java.net.*;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.util.logging.Logger;
-
-
 import java.util.logging.Level;
 import java.io.*;
 
@@ -138,7 +138,10 @@ public class Connection implements Runnable {
                 File[]fileList = folder.listFiles();
                 for (File file: fileList){
                     if(!file.getName().startsWith(".")){
-                        list+=file.getName() + "\n";
+                        Date d = new Date(file.lastModified());
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");  
+                        String l = String.format("%-20s%-15s%-25s%-15s", file.getName(), file.length() + " B",sdf.format(d),"Public");
+                        list+=l + " " + "\n";
                     }
                     
                 }

@@ -90,8 +90,15 @@ public class Protocol {
 
     public void listFiles() throws IOException {
             System.out.println("Available Files");
-            System.out.println("---------------");
-
+            for (int i=0; i<70; i++){
+                System.out.print("-");
+            }
+            System.out.println("");
+            System.out.println(String.format("%-20s%-15s%-25s%-15s", "File Name", "Size", "Last Modified","Permission"));
+            for (int i=0; i<70; i++){
+                System.out.print("-");
+            }
+            System.out.println("");
             try {
                 DataInputStream clientData = new DataInputStream(socket.getInputStream());
                 long size = clientData.readLong();

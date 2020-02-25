@@ -19,8 +19,8 @@ public class Client {
         } else {
             port = Integer.parseInt(args[1]);
             operation = args[2];
+            InetAddress address = InetAddress.getByName(args[0]);
             try {
-                InetAddress address = InetAddress.getByName(args[0]);
                 socket = new Socket(address, port);
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 os = new PrintStream(socket.getOutputStream());
@@ -33,14 +33,20 @@ public class Client {
 
             System.out.println("FileShare Application");
             System.out.println("=====================");
+            System.out.println("Server IP Address: " + address);
+            System.out.println("Server Port: " + port);
             if(!operation.equals("-l")){
                 String fileName = args[3];
                 switch (operation) {
                     case "-u":
+                            System.out.println("Upload Requested: " + fileName);
+                            System.out.println("=====================");
                             sendMessage("CMD|1|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE UPLOAD");
                             protocol.sendFile(new File(fileName));
                             break;
                     case "-d":
+                            System.out.println("Download Requested: " + fileName);
+                            System.out.println("=====================");
                             sendMessage("CMD|2|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE DOWNLOAD");
                             sendMessage("DAT|2|" + socket.getInetAddress() + "|" + socket.getPort(),fileName);
                             protocol.receiveFile(fileName);
@@ -48,6 +54,8 @@ public class Client {
                 }
             }
             else{
+                System.out.println("Server Query Requested: ");
+                System.out.println("=====================");
                 sendMessage("CMD|3|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE QUERY");
                 protocol.listFiles();
             }
