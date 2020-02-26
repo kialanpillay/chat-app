@@ -95,7 +95,7 @@ public class Connection implements Runnable {
 
                                 if(verifyKey(bKey, fileName)){
                                     sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"VALID KEY");
-                                    sendFile(fileName);
+                                    sendFile(fileName, "ACCESS");
                                     sendMessage("CMD|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                                     break;
                                 }
@@ -108,13 +108,13 @@ public class Connection implements Runnable {
         
                             }
                             else if(filePermission.equalsIgnoreCase("VIS")){
-                                sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"ACCESS DENIED");
+                                sendFile(fileName, "DENIED");
                                 System.err.println("Access Violation: " + clientSocket);
                                 sendMessage("CMD|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                                 break;
                             }
                             else if(filePermission.equalsIgnoreCase("PUB")) {
-                                sendFile(fileName);
+                                sendFile(fileName, "ACCESS");
                                 sendMessage("CMD|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                                 break;
 
@@ -173,33 +173,42 @@ public class Connection implements Runnable {
         
     }
 
-    public void sendFile(String fileName) throws IOException {
+    public void sendFile(String fileName, String access) throws IOException {
         try {
-
-            File file = new File("server/"+fileName);
-            byte[] dataBytes = new byte[(int) file.length()];
-
-            FileInputStream fis = new FileInputStream(file);
-            BufferedInputStream bis = new BufferedInputStream(fis);
-            DataInputStream dis = new DataInputStream(bis);
-            dis.readFully(dataBytes, 0, dataBytes.length);
-            OutputStream os = clientSocket.getOutputStream();
-            DataOutputStream dos = new DataOutputStream(os);
-            dos.writeUTF("DAT|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort());
-            dos.writeUTF(file.getName());
-            dos.writeLong(dataBytes.length);
-            dos.write(dataBytes, 0, dataBytes.length);
-            dos.flush();
-
-            //Get receipt message from client
-            String hResponse = in.readLine();
-            String bResponse = in.readLine();
-            if(hResponse.contains("CTRL|2") && bResponse.contains("DOWNLOAD RECEIVED")){
-            
-                createMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"DOWNLOAD OPERATION COMPLETE");
-                System.out.println("File " + fileName + " sent to client at port " + clientSocket.getPort());
+            if(access.equals("DENIED")){
+                OutputStream os = clientSocket.getOutputStream();
+                DataOutputStream dos = new DataOutputStream(os);
+                dos.writeUTF("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort());
+                dos.writeUTF("ACCESS DENIED"); //Send ACCESS DENIED message to client.
+                dos.flush();
             }
-            dis.close();
+            else{
+                File file = new File("server/"+fileName);
+                byte[] dataBytes = new byte[(int) file.length()];
+
+                FileInputStream fis = new FileInputStream(file);
+                BufferedInputStream bis = new BufferedInputStream(fis);
+                DataInputStream dis = new DataInputStream(bis);
+                dis.readFully(dataBytes, 0, dataBytes.length);
+                OutputStream os = clientSocket.getOutputStream();
+                DataOutputStream dos = new DataOutputStream(os);
+                dos.writeUTF("DAT|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort());
+                dos.writeUTF(file.getName());
+                dos.writeLong(dataBytes.length);
+                dos.write(dataBytes, 0, dataBytes.length);
+                dos.flush();
+
+                //Get receipt message from client
+                String hResponse = in.readLine();
+                String bResponse = in.readLine();
+                if(hResponse.contains("CTRL|2") && bResponse.contains("DOWNLOAD RECEIVED")){
+                
+                    createMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"DOWNLOAD OPERATION COMPLETE");
+                    System.out.println("File " + fileName + " sent to client at port " + clientSocket.getPort());
+                }
+                dis.close();
+            }
+            
         } catch (Exception e) {
             System.out.println(e);
             sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"404 NOT FOUND");

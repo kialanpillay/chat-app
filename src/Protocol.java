@@ -105,21 +105,30 @@ public class Protocol {
                 int bytesRead = 0;
                 DataInputStream clientData = new DataInputStream(socket.getInputStream());
                 String header = clientData.readUTF(); //retrieve header from client
-                assert(header.contains("DAT|2")); //assert that we are receiving file data
-                fileName = clientData.readUTF();
-                OutputStream output = new FileOutputStream(("received_from_server_" + fileName));
-                long size = clientData.readLong();
-                byte[] buffer = new byte[1024];
-                while (size > 0 && (bytesRead = clientData.read(buffer, 0, (int) Math.min(buffer.length, size))) != -1) {
-                    output.write(buffer, 0, bytesRead);
-                    size -= bytesRead;
+                
+                if(header.contains("CTRL|2")){
+                    sendMessage("CTRL|2|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR RECEIVED");
+                    System.err.println("Access denied for " + fileName + "!");
+                    ps.close();
+                    inStream.close();
                 }
-                sendMessage("CTRL|2|" + socket.getInetAddress() + "|" + socket.getPort(),"DOWNLOAD RECEIVED");
-                System.out.println("File " + fileName + " received from Server.");
+                else{
+                    fileName = clientData.readUTF();
+                    OutputStream output = new FileOutputStream(("received_from_server_" + fileName));
+                    long size = clientData.readLong();
+                    byte[] buffer = new byte[1024];
+                    while (size > 0 && (bytesRead = clientData.read(buffer, 0, (int) Math.min(buffer.length, size))) != -1) {
+                        output.write(buffer, 0, bytesRead);
+                        size -= bytesRead;
+                    }
+                    sendMessage("CTRL|2|" + socket.getInetAddress() + "|" + socket.getPort(),"DOWNLOAD RECEIVED");
+                    System.out.println("File " + fileName + " received from Server.");
 
-                output.close();
-                ps.close();
-                inStream.close();
+                    output.close();
+                    ps.close();
+                    inStream.close();
+                }
+                
                 
             } catch (IOException ex) {
                 System.out.println(ex);
