@@ -163,11 +163,7 @@ public class Protocol {
                 ps.close();
                 inStream.close();
             } catch (IOException e) {
-                String hError = inStream.readLine();
-                String bError = inStream.readLine();
-                if(hError.contains("CTRL|3") && bError.contains("404")){
-                    sendMessage("CTRL|3|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR RECEIVED");
-                }
+                sendMessage("CTRL|3|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR RECEIVED");
                 System.err.println("Error retrieving files from Server!");
                 ps.close();
                 inStream.close();
@@ -175,6 +171,32 @@ public class Protocol {
             System.out.println("\n");
        
     }
+
+    public void queryFile() throws IOException {
+        System.out.println(String.format("%-20s%-15s%-25s%-15s", "File Name", "Size", "Last Modified","Permission"));
+        for (int i=0; i<70; i++){
+            System.out.print("-");
+        }
+        System.out.println("");
+        try {
+            DataInputStream clientData = new DataInputStream(socket.getInputStream());
+            long size = clientData.readLong();
+            byte[] data = new byte[(int)size];
+            clientData.readFully(data);
+            String str= new String(data,"UTF-8");
+            System.out.println(str);
+            sendMessage("CTRL|4|" + socket.getInetAddress() + "|" + socket.getPort(),"FILE QUERY RECEIVED");
+            ps.close();
+            inStream.close();
+        } catch (IOException e) {
+            sendMessage("CTRL|4|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR RECEIVED");
+            System.err.println("Error retrieving files from Server!");
+            ps.close();
+            inStream.close();
+        }
+        System.out.println("\n");
+   
+}
 
     public void sendMessage(String header, String body){
         Message m = new Message(header,body);

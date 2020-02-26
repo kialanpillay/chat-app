@@ -100,10 +100,21 @@ public class Client {
                 }
             }
             else{
-                System.out.println("Server Query Requested: ");
-                System.out.println("=====================");
-                sendMessage("CMD|3|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE QUERY");
-                protocol.listFiles();
+                if(args.length > 3){
+                    String fileName = args[3];
+                    System.out.println("Server Query Requested: " + fileName);
+                    System.out.println("=====================");
+                    sendMessage("CMD|4|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE FILE QUERY");
+                    sendMessage("DAT|4|" + socket.getInetAddress() + "|" + socket.getPort(),fileName);
+                    protocol.queryFile();
+                }
+                else{
+                    System.out.println("Server Query Requested: ");
+                    System.out.println("=====================");
+                    sendMessage("CMD|3|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE QUERY");
+                    protocol.listFiles();
+                }
+                
             }
             createMessage("CMD|0|" + socket.getInetAddress() + "|" + socket.getPort(),"CONNECTION TERMINATED");
             socket.close();

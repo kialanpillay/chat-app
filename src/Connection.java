@@ -134,6 +134,18 @@ public class Connection implements Runnable {
                         listFiles();
                         createMessage("CMD|3|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                         break;
+
+                    case "4":
+                        createMessage("CTRL|4|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"FILE QUERY OPERATION ACKNOWLEDGED");
+                        String query = "";
+                        String hQuery= in.readLine();
+                        if(hQuery.contains("DAT|4")){
+                            query = in.readLine();
+                        }
+                        queryFile(query);
+                        createMessage("CMD|4|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
+                        break;
+
                     default:
                         in.close();
                         ps.close();
@@ -256,7 +268,7 @@ public class Connection implements Runnable {
                 String hResponse = in.readLine();
                 String bResponse = in.readLine();
                 if(hResponse.contains("CTRL|3") && bResponse.contains("QUERY RECEIVED")){
-                    createMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"QUERY OPERATION COMPLETE");
+                    createMessage("CTRL|3|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"QUERY OPERATION COMPLETE");
                     System.out.println("List of files sent to client at port " + clientSocket.getPort());
                 }
                 
@@ -267,7 +279,56 @@ public class Connection implements Runnable {
             System.err.println("Error retrieving files!");
         } 
     }
+    public void queryFile(String fileName) throws IOException {
+        try {
+                String details = "";
 
+                File folder = new File("server");
+                File[]fileList = folder.listFiles();
+                boolean found = false;
+                for (File file: fileList){
+                    if(file.getName().equals(fileName)){
+                        Date d = new Date(file.lastModified());
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss"); 
+                        String permission = checkPermission(file.getName());
+                        if(permission.equals("PUB")){
+                            permission = "Public";
+                        } 
+                        else{
+                            permission = "Visible";
+                        }
+                        details = String.format("%-20s%-15s%-25s%-15s", file.getName(), file.length() + " B",sdf.format(d), permission);
+                        found = true;
+                    }
+                    
+                }
+                if(!found){
+                    details = String.format("%-20s%-15s%-25s%-15s", "404 Not Found", "0 B","-", "-");
+                }
+                
+                byte[] dataBytes = details.getBytes("UTF-8");
+                OutputStream os = clientSocket.getOutputStream();
+                DataOutputStream dos = new DataOutputStream(os);
+                dos.writeLong(dataBytes.length);
+                dos.write(dataBytes, 0, dataBytes.length);
+                dos.flush();
+                
+                String hResponse = in.readLine();
+                String bResponse = in.readLine();
+                if(hResponse.contains("CTRL|4") && bResponse.contains("FILE QUERY RECEIVED")){
+                    createMessage("CTRL|4|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"QUERY OPERATION COMPLETE");
+                    System.out.println("File details sent to client at port " + clientSocket.getPort());
+                }
+                
+        
+
+        } catch (Exception e) {
+            sendMessage("CTRL|4|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"404");
+            System.err.println("Error retrieving files!");
+        } 
+    }
+    
+    
     public void sendMessage(String header, String body){
         Message m = new Message(header,body);
         ps.println(m.getHeader());
