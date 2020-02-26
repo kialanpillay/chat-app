@@ -58,7 +58,7 @@ public class Connection implements Runnable {
 
                         }
                         receiveFile();
-
+                        Server.writeFile();
                         sendMessage("CMD|0|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                         break;
                     case "2":

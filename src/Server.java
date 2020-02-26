@@ -13,26 +13,7 @@ public class Server{
     static ArrayList<String> permissions = new ArrayList<String>();
     static ArrayList<String> keys = new ArrayList<String>();
     public static void main (String [] args ) throws IOException {
-        
-        
-//reading in 
-    try{Scanner f  = new Scanner(new File("Files.txt"));
 
-        while(f.hasNext()){
-            String line = f.nextLine();
-            int firstComma = line.indexOf(",");
-            String fileName = line.substring(0,firstComma);
-            String permission = line.substring(firstComma+1, firstComma+4);
-            String key = line.substring(firstComma+5);
-            fileNames.add(fileName);
-            permissions.add(permission);
-            keys.add(key);
-        }
-
-    }
-    catch(IOException e){
-        e.printStackTrace();
-    }
 
         if(args.length < 1){
             System.out.println("Incorrect number of arguments!");
@@ -47,6 +28,7 @@ public class Server{
 
                 File file = new File("server");
                 file.mkdir();
+                readFile();
 
             } catch (Exception e) {
                 System.err.println("Port already in use.");
@@ -68,10 +50,6 @@ public class Server{
                     break;
                 }
             }
-            //TODO
-
-
-        
 
         }
         serverSocket.close();
@@ -82,11 +60,33 @@ public class Server{
 
     public static void writeFile(){
         try{
-            FileWriter writer = new FileWriter("File.txt");
-            writer.write("hello");
+            FileWriter writer = new FileWriter("server/meta.txt");
+            //writer.write("hello");
             for(int i=0;i<fileNames.size();i++){
                 writer.write(fileNames.get(i)+","+permissions.get(i)+","+keys.get(i));
             }
+            writer.close();
+        }
+        catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    public static void readFile(){
+        
+        try{Scanner f  = new Scanner(new File("server/meta.txt"));
+
+            while(f.hasNext()){
+                String line = f.nextLine();
+                int firstComma = line.indexOf(",");
+                String fileName = line.substring(0,firstComma);
+                String permission = line.substring(firstComma+1, firstComma+4);
+                String key = line.substring(firstComma+5);
+                fileNames.add(fileName);
+                permissions.add(permission);
+                keys.add(key);
+            }
+
         }
         catch(IOException e){
             e.printStackTrace();
