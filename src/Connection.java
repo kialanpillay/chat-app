@@ -195,7 +195,7 @@ public class Connection implements Runnable {
                 File folder = new File("server");
                 File[]fileList = folder.listFiles();
                 for (File file: fileList){
-                    if(!file.getName().startsWith(".") && !checkPermission(file.getName()).equals("KEY")){
+                    if(!file.getName().startsWith(".") && !file.getName().equals("meta.txt") && !checkPermission(file.getName()).equals("KEY")){
                         Date d = new Date(file.lastModified());
                         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss"); 
                         String permission = checkPermission(file.getName());
