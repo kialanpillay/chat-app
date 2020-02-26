@@ -86,7 +86,7 @@ public class Server{
                 int firstComma = line.indexOf(",");
                 String fileName = line.substring(0,firstComma);
                 String permission = line.substring(firstComma+1, firstComma+4);
-                String key = line.substring(firstComma+5);
+                String key = line.substring(firstComma+5,line.length());
                 fileNames.add(fileName);
                 permissions.add(permission);
                 keys.add(key);
