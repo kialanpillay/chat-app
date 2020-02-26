@@ -16,15 +16,23 @@ public class Server{
         
         
 //reading in 
+    try{Scanner f  = new Scanner(new File("Files.txt"));
 
-    Scanner f  = new Scanner(new File("Files.txt"));
-    while(f.hasNext()){
-    
+        while(f.hasNext()){
+        String line = f.nextLine();
+        int firstComma = line.indexOf(",");
+        String fileName = line.substring(0,firstComma);
+        String permission = line.substring(firstComma+1, firstComma+4);
+        String key = line.substring(firstComma+5);
+        fileNames.add(fileName);
+        permissions.add(permission);
+        keys.add(key);
 
 
+        }
 
-
-
+    }catch(IOException e){
+        e.printStackTrace();
     }
 
 
@@ -70,9 +78,6 @@ public class Server{
             FileWriter writer = new FileWriter("Files.txt",true);
             for(int i=0;i<fileNames.size();i++){
                 writer.write(fileNames.get(i)+","+permissions.get(i)+","+keys.get(i));
- 
-
-
             }
         }
         catch(IOException e){
