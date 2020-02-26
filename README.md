@@ -1,6 +1,6 @@
 # Networks Assignment I - CSC3002F
-* Kialan Pillay (PLLKIA010)
 * Insaaf Dhansay (DHNINS001)
+* Kialan Pillay (PLLKIA010)
 * Ziyyaad Anthony (MUHANT001)
 
 ## Run
@@ -19,4 +19,5 @@ Alternatively
     * ```java src/Client 127.0.0.1 8080 -d yourfile.txt``` to download a file.
     * ```java src/Client 127.0.0.1 8080 -d yourfile.txt yoursecretkey``` to download a private file.
     * ```java src/Client 127.0.0.1 8080 -l``` to query the server for stored files (public and visible).
+    * ```java src/Client 127.0.0.1 8080 -l filename``` to query the server for specific file details.
     * Note you should be able to specify just the file name if the file is in the current directory, otherwise specify an **absolute** path.
