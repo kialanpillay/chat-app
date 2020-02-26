@@ -243,7 +243,7 @@ public class Connection implements Runnable {
         Message m = new Message(header,body);
     }
 
-    private int getFileIndex(String filename){
+    public int getFileIndex(String filename){
        String FileName = filename;
        int fileIndex=0;
        for(int i =0; i<Server.fileNames.size();i++) {
@@ -256,7 +256,7 @@ public class Connection implements Runnable {
 
     }
 
-    private String checkPermission(String filename){
+    public String checkPermission(String filename){
        String FileName = filename;
        int fileIndex = getFileIndex(FileName);
        String permission = Server.permissions.get(fileIndex);
@@ -264,7 +264,7 @@ public class Connection implements Runnable {
 
 
     }
-    private boolean verifyKey(String key,String filename){
+    public boolean verifyKey(String key,String filename){
         String clientKey = key;
         String FileName = filename;
         int keyIndex = getFileIndex(FileName);
