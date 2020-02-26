@@ -61,9 +61,14 @@ public class Server{
     public static void writeFile(){
         try{
             FileWriter writer = new FileWriter("server/meta.txt");
-            //writer.write("hello");
             for(int i=0;i<fileNames.size();i++){
-                writer.write(fileNames.get(i)+","+permissions.get(i)+","+keys.get(i));
+                if(i<fileNames.size()-1){
+                    writer.write(fileNames.get(i)+","+permissions.get(i)+","+keys.get(i)+"\n");
+                }
+                else{
+                    writer.write(fileNames.get(i)+","+permissions.get(i)+","+keys.get(i));
+                }
+                
             }
             writer.close();
         }
