@@ -8,6 +8,7 @@ default:
 	javac src/Connection.java && javac src/Server.java && javac src/Protocol.java && javac src/Client.java && javac src/Message.java
 
 run:
+	touch server/meta.txt
 	java src/Server 8080
 
 docs:

@@ -4,6 +4,9 @@ import java.net.*;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.logging.Logger;
+
+
+
 import java.util.logging.Level;
 import java.io.*;
 
@@ -20,38 +23,129 @@ public class Connection implements Runnable {
     @Override
     public void run() {
         try {
-            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            ps = new PrintStream(clientSocket.getOutputStream());
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));//input stream
+            ps = new PrintStream(clientSocket.getOutputStream());//send messages to client
 
             String headerRequest = in.readLine(); //Retrieve operation code from header
             String operation = headerRequest.substring(4,5);//Retrieve operation code from header
             String bodyRequest = in.readLine();
             assert(bodyRequest.contains("INITIATE")); //Check if body of message contains initiate operation.
-
-
+            
+            
                 switch (operation) {
                     case "1":
                         sendMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"UPLOAD OPERATION ACKNOWLEDGED");
-                        receiveFile();
-                        sendMessage("CMD|0|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
+                        
+
+                        String hPermission=in.readLine();
+                        assert(hPermission.contains("DAT|1"));
+                        String bPermission = in.readLine();
+                        String hKey, bKey = "";
+             
+                        createMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"FILE PERMISSION RECEIVED");
+                        if(bPermission.equalsIgnoreCase("Key")){
+                            hKey = in.readLine();
+                            assert(hKey.contains("DAT|1"));
+                            bKey = in.readLine();
+                            createMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"FILE KEY RECEIVED ");
+                        }
+
+                        String filename = receiveFile();
+                        if(Server.fileNames.contains(filename)){
+                            int index = getFileIndex(filename);
+                            Server.permissions.set(index,bPermission);
+                            if(bPermission.equalsIgnoreCase("Key")){
+                                Server.keys.set(index,bKey);
+                            }
+                            else{
+                                Server.keys.set(index,"0");
+                            }
+
+                        }
+                        else if(!filename.equals("")){
+                            Server.fileNames.add(filename);
+                            Server.permissions.add(bPermission);
+                            if(bPermission.equalsIgnoreCase("Key")){
+                                Server.keys.add(bKey);
+                            }
+                            else{
+                                Server.keys.add("0");
+                            }
+                        }
+
+                        Server.writeFile();
+
+                        sendMessage("CMD|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                         break;
+
                     case "2":
                         createMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"DOWNLOAD OPERATION ACKNOWLEDGED");
                         String fileName = "";
                         String hFile = in.readLine();
                         if(hFile.contains("DAT|2")){
                             fileName = in.readLine();
+                            createMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"FILE NAME RECEIVED");
 
+                            if(!Server.fileNames.contains(fileName)){
+                                sendFile(fileName, "");
+                                sendMessage("CMD|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
+                                break;
+                            }
+                            else{
+
+                                String filePermission = checkPermission(fileName);
+                                
+                                if(filePermission.equalsIgnoreCase("KEY")){
+                                    hKey = in.readLine();
+                                    assert(hKey.contains("DAT|2"));
+                                    bKey = in.readLine();
+
+                                    if(verifyKey(bKey, fileName)){
+                                        sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"VALID KEY");
+                                        sendFile(fileName, "ACCESS");
+                                        sendMessage("CMD|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
+                                        break;
+                                    }
+                                    else{
+                                        sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"INVALID KEY");
+                                        System.err.println("Access Violation: " + clientSocket);
+                                        sendMessage("CMD|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
+                                    break;
+                                    }
+            
+                                }
+                                else if(filePermission.equalsIgnoreCase("VIS")){
+                                    sendFile(fileName, "DENIED");
+                                    System.err.println("Access Violation: " + clientSocket);
+                                    sendMessage("CMD|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
+                                    break;
+                                }
+                                else {
+                                    sendFile(fileName, "ACCESS");
+                                    sendMessage("CMD|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
+                                    break;
+
+                                }
+                            }
                         }
-                        createMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"FILE NAME RECEIVED");
-                        sendFile(fileName);
-                        sendMessage("CMD|0|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
-                        break;
+                        
                     case "3":
                         createMessage("CTRL|3|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"QUERY OPERATION ACKNOWLEDGED");
                         listFiles();
-                        sendMessage("CMD|0|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
+                        createMessage("CMD|3|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                         break;
+
+                    case "4":
+                        createMessage("CTRL|4|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"FILE QUERY OPERATION ACKNOWLEDGED");
+                        String query = "";
+                        String hQuery= in.readLine();
+                        if(hQuery.contains("DAT|4")){
+                            query = in.readLine();
+                        }
+                        queryFile(query);
+                        createMessage("CMD|4|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
+                        break;
+
                     default:
                         in.close();
                         ps.close();
@@ -68,7 +162,7 @@ public class Connection implements Runnable {
         }
     }
 
-    public void receiveFile() throws IOException {
+    public String receiveFile() throws IOException {
         try {
             int bytesRead;
 
@@ -88,44 +182,56 @@ public class Connection implements Runnable {
 
             clientData.close();
             output.close();
-
+            
+            return fileName;
             
         } catch (IOException ex) {
             sendMessage("CMD|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"ERROR RECEIVED");
             System.err.println("Client error. Connection closed at port " + clientSocket.getPort());
-            
+            return "";
         }
+        
     }
 
-    public void sendFile(String fileName) throws IOException {
+    public void sendFile(String fileName, String access) throws IOException {
         try {
-
-            File file = new File("server/"+fileName);
-            byte[] dataBytes = new byte[(int) file.length()];
-
-            FileInputStream fis = new FileInputStream(file);
-            BufferedInputStream bis = new BufferedInputStream(fis);
-            DataInputStream dis = new DataInputStream(bis);
-            dis.readFully(dataBytes, 0, dataBytes.length);
-            OutputStream os = clientSocket.getOutputStream();
-            DataOutputStream dos = new DataOutputStream(os);
-            dos.writeUTF("DAT|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort());
-            dos.writeUTF(file.getName());
-            dos.writeLong(dataBytes.length);
-            dos.write(dataBytes, 0, dataBytes.length);
-            dos.flush();
-
-            //Get receipt message from client
-            String hResponse = in.readLine();
-            String bResponse = in.readLine();
-            if(hResponse.contains("CTRL|2") && bResponse.contains("DOWNLOAD RECEIVED")){
-                createMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"DOWNLOAD OPERATION COMPLETE");
-                System.out.println("File sent to client at port " + clientSocket.getPort());
+            if(access.equals("DENIED")){
+                OutputStream os = clientSocket.getOutputStream();
+                DataOutputStream dos = new DataOutputStream(os);
+                dos.writeUTF("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort());
+                dos.writeUTF("ACCESS DENIED"); //Send ACCESS DENIED message to client.
+                dos.flush();
             }
-            dis.close();
+            else{
+                File file = new File("server/"+fileName);
+                byte[] dataBytes = new byte[(int) file.length()];
+
+                FileInputStream fis = new FileInputStream(file);
+                BufferedInputStream bis = new BufferedInputStream(fis);
+                DataInputStream dis = new DataInputStream(bis);
+                dis.readFully(dataBytes, 0, dataBytes.length);
+                OutputStream os = clientSocket.getOutputStream();
+                DataOutputStream dos = new DataOutputStream(os);
+                dos.writeUTF("DAT|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort());
+                dos.writeUTF(file.getName());
+                dos.writeLong(dataBytes.length);
+                dos.write(dataBytes, 0, dataBytes.length);
+                dos.flush();
+
+                //Get receipt message from client
+                String hResponse = in.readLine();
+                String bResponse = in.readLine();
+                if(hResponse.contains("CTRL|2") && bResponse.contains("DOWNLOAD RECEIVED")){
+                
+                    createMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"DOWNLOAD OPERATION COMPLETE");
+                    System.out.println("File " + fileName + " sent to client at port " + clientSocket.getPort());
+                }
+                dis.close();
+            }
+            
         } catch (Exception e) {
             sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"404 NOT FOUND");
-            System.err.println("404 NOT FOUND");
+            System.err.println("404 Error");
 
         } 
     }
@@ -137,10 +243,17 @@ public class Connection implements Runnable {
                 File folder = new File("server");
                 File[]fileList = folder.listFiles();
                 for (File file: fileList){
-                    if(!file.getName().startsWith(".")){
+                    if(!file.getName().startsWith(".") && !file.getName().equals("meta.txt") && !checkPermission(file.getName()).equals("KEY")){
                         Date d = new Date(file.lastModified());
-                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");  
-                        String l = String.format("%-20s%-15s%-25s%-15s", file.getName(), file.length() + " B",sdf.format(d),"Public");
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss"); 
+                        String permission = checkPermission(file.getName());
+                        if(permission.equals("PUB")){
+                            permission = "Public";
+                        } 
+                        else{
+                            permission = "Visible";
+                        }
+                        String l = String.format("%-20s%-15s%-25s%-15s", file.getName(), file.length() + " B",sdf.format(d), permission);
                         list+=l + " " + "\n";
                     }
                     
@@ -155,7 +268,7 @@ public class Connection implements Runnable {
                 String hResponse = in.readLine();
                 String bResponse = in.readLine();
                 if(hResponse.contains("CTRL|3") && bResponse.contains("QUERY RECEIVED")){
-                    createMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"QUERY OPERATION COMPLETE");
+                    createMessage("CTRL|3|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"QUERY OPERATION COMPLETE");
                     System.out.println("List of files sent to client at port " + clientSocket.getPort());
                 }
                 
@@ -166,7 +279,59 @@ public class Connection implements Runnable {
             System.err.println("Error retrieving files!");
         } 
     }
+    public void queryFile(String fileName) throws IOException {
+        try {
+                String details = "";
 
+                File folder = new File("server");
+                File[]fileList = folder.listFiles();
+                boolean found = false;
+                for (File file: fileList){
+                    if(file.getName().equals(fileName)){
+                        Date d = new Date(file.lastModified());
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss"); 
+                        String permission = checkPermission(file.getName());
+                        if(permission.equals("PUB")){
+                            permission = "Public";
+                        } 
+                        else if(permission.equals("VIS")){
+                            permission = "Visible";
+                        }
+                        else{
+                            permission = "Private";
+                        }
+                        details = String.format("%-20s%-15s%-25s%-15s", file.getName(), file.length() + " B",sdf.format(d), permission);
+                        found = true;
+                    }
+                    
+                }
+                if(!found){
+                    details = String.format("%-20s%-15s%-25s%-15s", "404 Not Found", "0 B","-", "-");
+                }
+                
+                byte[] dataBytes = details.getBytes("UTF-8");
+                OutputStream os = clientSocket.getOutputStream();
+                DataOutputStream dos = new DataOutputStream(os);
+                dos.writeLong(dataBytes.length);
+                dos.write(dataBytes, 0, dataBytes.length);
+                dos.flush();
+                
+                String hResponse = in.readLine();
+                String bResponse = in.readLine();
+                if(hResponse.contains("CTRL|4") && bResponse.contains("FILE QUERY RECEIVED")){
+                    createMessage("CTRL|4|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"QUERY OPERATION COMPLETE");
+                    System.out.println("File details sent to client at port " + clientSocket.getPort());
+                }
+                
+        
+
+        } catch (Exception e) {
+            sendMessage("CTRL|4|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"404");
+            System.err.println("Error retrieving files!");
+        } 
+    }
+    
+    
     public void sendMessage(String header, String body){
         Message m = new Message(header,body);
         ps.println(m.getHeader());
@@ -176,5 +341,41 @@ public class Connection implements Runnable {
 
     public void createMessage(String header, String body){
         Message m = new Message(header,body);
+    }
+
+    public int getFileIndex(String filename){
+       String FileName = filename;
+       int fileIndex=0;
+       for(int i =0; i<Server.fileNames.size();i++) {
+            if(Server.fileNames.get(i).equals(FileName)){
+                fileIndex = i;
+            }
+       
+       }
+       return fileIndex;
+
+    }
+
+    public String checkPermission(String filename){
+       String FileName = filename;
+       int fileIndex = getFileIndex(FileName);
+       String permission = Server.permissions.get(fileIndex);
+       return permission;
+
+
+    }
+    public boolean verifyKey(String key,String filename){
+        String clientKey = key;
+        String FileName = filename;
+        int keyIndex = getFileIndex(FileName);
+        String fileKey = Server.keys.get(keyIndex);
+        if(clientKey.equals(fileKey)){
+            return true;
+        }
+        else{
+            return false;
+        }
+
+
     }
 }

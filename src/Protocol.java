@@ -58,7 +58,12 @@ public class Protocol {
         }
     }
 
-    public void receiveFile(String fileName) throws IOException {
+    public void receivePrivateFile(String fileName) throws IOException {
+        String hKey = inStream.readLine();
+        assert(hKey.contains("CTRL|2"));
+        String bKey = inStream.readLine();         
+        
+        if(bKey.equals("VALID KEY")){
             try {
                 int bytesRead = 0;
                 DataInputStream clientData = new DataInputStream(socket.getInputStream());
@@ -80,12 +85,60 @@ public class Protocol {
                 inStream.close();
                 
             } catch (IOException ex) {
+                System.out.println(ex);
                 sendMessage("CTRL|2|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR RECEIVED");
-                System.err.println("File does not exist on server!");
+                System.err.println("File " + fileName + " does not exist on server!");
                 ps.close();
                 inStream.close();
             }
+        }
+        else if(bKey.equals("INVALID KEY")){
+            sendMessage("CTRL|2|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR RECEIVED");
+            System.err.println("Invalid access key for " + fileName + "!");
+            ps.close();
+            inStream.close();
+        } 
+    }
 
+    public void receiveFile(String fileName) throws IOException {
+            try {
+                int bytesRead = 0;
+                DataInputStream clientData = new DataInputStream(socket.getInputStream());
+                String header = clientData.readUTF(); //retrieve header from client
+                
+                if(header.contains("CTRL|2")){
+                    sendMessage("CTRL|2|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR RECEIVED");
+                    System.err.println("Access denied for " + fileName + "!");
+                    ps.close();
+                    inStream.close();
+                }
+                else{
+                    fileName = clientData.readUTF();
+                    OutputStream output = new FileOutputStream(("received_from_server_" + fileName));
+                    long size = clientData.readLong();
+                    byte[] buffer = new byte[1024];
+                    while (size > 0 && (bytesRead = clientData.read(buffer, 0, (int) Math.min(buffer.length, size))) != -1) {
+                        output.write(buffer, 0, bytesRead);
+                        size -= bytesRead;
+                    }
+                    sendMessage("CTRL|2|" + socket.getInetAddress() + "|" + socket.getPort(),"DOWNLOAD RECEIVED");
+                    System.out.println("File " + fileName + " received from Server.");
+
+                    output.close();
+                    ps.close();
+                    inStream.close();
+                }
+                
+                
+            } catch (IOException ex) {
+                sendMessage("CTRL|2|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR RECEIVED");
+                System.err.println("File " + fileName + " does not exist on server!");
+                ps.close();
+                inStream.close();
+            }
+        
+
+        
     }
 
     public void listFiles() throws IOException {
@@ -110,11 +163,7 @@ public class Protocol {
                 ps.close();
                 inStream.close();
             } catch (IOException e) {
-                String hError = inStream.readLine();
-                String bError = inStream.readLine();
-                if(hError.contains("CTRL|3") && bError.contains("404")){
-                    sendMessage("CTRL|3|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR RECEIVED");
-                }
+                sendMessage("CTRL|3|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR RECEIVED");
                 System.err.println("Error retrieving files from Server!");
                 ps.close();
                 inStream.close();
@@ -122,6 +171,32 @@ public class Protocol {
             System.out.println("\n");
        
     }
+
+    public void queryFile() throws IOException {
+        System.out.println(String.format("%-20s%-15s%-25s%-15s", "File Name", "Size", "Last Modified","Permission"));
+        for (int i=0; i<70; i++){
+            System.out.print("-");
+        }
+        System.out.println("");
+        try {
+            DataInputStream clientData = new DataInputStream(socket.getInputStream());
+            long size = clientData.readLong();
+            byte[] data = new byte[(int)size];
+            clientData.readFully(data);
+            String str= new String(data,"UTF-8");
+            System.out.println(str);
+            sendMessage("CTRL|4|" + socket.getInetAddress() + "|" + socket.getPort(),"FILE QUERY RECEIVED");
+            ps.close();
+            inStream.close();
+        } catch (IOException e) {
+            sendMessage("CTRL|4|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR RECEIVED");
+            System.err.println("Error retrieving files from Server!");
+            ps.close();
+            inStream.close();
+        }
+        System.out.println("\n");
+   
+}
 
     public void sendMessage(String header, String body){
         Message m = new Message(header,body);
