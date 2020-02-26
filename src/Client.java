@@ -40,22 +40,21 @@ public class Client {
                     permission = "KEY";
                 }
 
-                if(args.length>5 && permission.equals("KEY")){
+                if(args.length > 5 && permission.equals("KEY")){
                     key = args[5];   
                 }
-                else if(args.length<=5 && permission.equals("KEY")) {
+                else if(args.length <= 5 && permission.equals("KEY")) {
                     System.err.println("No private key specified!");
                     System.exit(1);
                 }
             }
             else if(operation.equals("-d")){
-                if(args.length < 4){
-                    System.err.println("Incorrect number of arguments!");
-                    System.exit(1);
+                if(args.length > 4  && permission.equals("KEY")){
+                    key = args[4]; 
                 }
-                if(args.length>4){
-                    key = args[4];
-                    sendMessage("DAT|2|" + socket.getInetAddress() + "|" + socket.getPort(),key);    
+                if(args.length < 4){
+                    System.err.println("No private key provided!");
+                    System.exit(1);
                 } 
             }
             InetAddress address = InetAddress.getByName(args[0]);
