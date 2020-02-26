@@ -131,7 +131,6 @@ public class Protocol {
                 
                 
             } catch (IOException ex) {
-                System.out.println(ex);
                 sendMessage("CTRL|2|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR RECEIVED");
                 System.err.println("File " + fileName + " does not exist on server!");
                 ps.close();

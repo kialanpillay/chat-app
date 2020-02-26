@@ -86,38 +86,46 @@ public class Connection implements Runnable {
                             fileName = in.readLine();
                             createMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"FILE NAME RECEIVED");
 
-                            String filePermission = checkPermission(fileName);
-                            
-                            if(filePermission.equalsIgnoreCase("KEY")){
-                                hKey = in.readLine();
-                                assert(hKey.contains("DAT|2"));
-                                bKey = in.readLine();
+                            if(!Server.fileNames.contains(fileName)){
+                                sendFile(fileName, "");
+                                sendMessage("CMD|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
+                                break;
+                            }
+                            else{
 
-                                if(verifyKey(bKey, fileName)){
-                                    sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"VALID KEY");
-                                    sendFile(fileName, "ACCESS");
+                                String filePermission = checkPermission(fileName);
+                                
+                                if(filePermission.equalsIgnoreCase("KEY")){
+                                    hKey = in.readLine();
+                                    assert(hKey.contains("DAT|2"));
+                                    bKey = in.readLine();
+
+                                    if(verifyKey(bKey, fileName)){
+                                        sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"VALID KEY");
+                                        sendFile(fileName, "ACCESS");
+                                        sendMessage("CMD|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
+                                        break;
+                                    }
+                                    else{
+                                        sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"INVALID KEY");
+                                        System.err.println("Access Violation: " + clientSocket);
+                                        sendMessage("CMD|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
+                                    break;
+                                    }
+            
+                                }
+                                else if(filePermission.equalsIgnoreCase("VIS")){
+                                    sendFile(fileName, "DENIED");
+                                    System.err.println("Access Violation: " + clientSocket);
                                     sendMessage("CMD|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                                     break;
                                 }
-                                else{
-                                    sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"INVALID KEY");
-                                    System.err.println("Access Violation: " + clientSocket);
+                                else {
+                                    sendFile(fileName, "ACCESS");
                                     sendMessage("CMD|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
-                                break;
-                                }
-        
-                            }
-                            else if(filePermission.equalsIgnoreCase("VIS")){
-                                sendFile(fileName, "DENIED");
-                                System.err.println("Access Violation: " + clientSocket);
-                                sendMessage("CMD|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
-                                break;
-                            }
-                            else if(filePermission.equalsIgnoreCase("PUB")) {
-                                sendFile(fileName, "ACCESS");
-                                sendMessage("CMD|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
-                                break;
+                                    break;
 
+                                }
                             }
                         }
                         
@@ -183,6 +191,7 @@ public class Connection implements Runnable {
                 dos.flush();
             }
             else{
+                System.out.println(fileName);
                 File file = new File("server/"+fileName);
                 byte[] dataBytes = new byte[(int) file.length()];
 
@@ -210,7 +219,6 @@ public class Connection implements Runnable {
             }
             
         } catch (Exception e) {
-            System.out.println(e);
             sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"404 NOT FOUND");
             System.err.println("404 Error");
 
