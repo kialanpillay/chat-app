@@ -69,9 +69,8 @@ public class Server{
         try{
             FileWriter writer = new FileWriter("Files.txt",true);
             for(int i=0;i<fileNames.size();i++){
-                writer.write(fileNames.get(i)+",");
-                writer.write(permissions.get(i)+",");
-                writer.write(keys.get(i));
+                writer.write(fileNames.get(i)+","+permissions.get(i)+","+keys.get(i));
+ 
 
 
             }
