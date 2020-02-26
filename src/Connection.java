@@ -191,7 +191,6 @@ public class Connection implements Runnable {
                 dos.flush();
             }
             else{
-                System.out.println(fileName);
                 File file = new File("server/"+fileName);
                 byte[] dataBytes = new byte[(int) file.length()];
 
