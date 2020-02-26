@@ -75,7 +75,7 @@ public class Server{
         }
         //TODO
         try{
-            FileWriter writer = new FileWriter("Files.txt",true);
+            FileWriter writer = new FileWriter("File.txt");
             for(int i=0;i<fileNames.size();i++){
                 writer.write(fileNames.get(i)+","+permissions.get(i)+","+keys.get(i));
             }
