@@ -294,8 +294,11 @@ public class Connection implements Runnable {
                         if(permission.equals("PUB")){
                             permission = "Public";
                         } 
-                        else{
+                        else if(permission.equals("VIS")){
                             permission = "Visible";
+                        }
+                        else{
+                            permission = "Private";
                         }
                         details = String.format("%-20s%-15s%-25s%-15s", file.getName(), file.length() + " B",sdf.format(d), permission);
                         found = true;
