@@ -60,7 +60,7 @@ public class Server{
 
     public static void writeFile(){
         try{
-            FileWriter writer = new FileWriter("server/meta.txt");
+            FileWriter writer = new FileWriter("server/meta.txt",false);
             for(int i=0;i<fileNames.size();i++){
                 if(i<fileNames.size()-1){
                     writer.write(fileNames.get(i)+","+permissions.get(i)+","+keys.get(i)+"\n");
@@ -68,7 +68,6 @@ public class Server{
                 else{
                     writer.write(fileNames.get(i)+","+permissions.get(i)+","+keys.get(i));
                 }
-                
             }
             writer.close();
         }
@@ -77,7 +76,7 @@ public class Server{
         }
     }
 
-    public static void readFile(){
+    public static void readFile() throws IOException {
         
         try{Scanner f  = new Scanner(new File("server/meta.txt"));
 

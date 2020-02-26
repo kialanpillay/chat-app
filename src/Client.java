@@ -49,13 +49,9 @@ public class Client {
                 }
             }
             else if(operation.equals("-d")){
-                if(args.length > 4  && permission.equals("KEY")){
+                if(args.length > 4){
                     key = args[4]; 
                 }
-                if(args.length < 4){
-                    System.err.println("No private key provided!");
-                    System.exit(1);
-                } 
             }
             InetAddress address = InetAddress.getByName(args[0]);
             try {
@@ -75,9 +71,6 @@ public class Client {
             System.out.println("Server Port: " + port);
             if(!operation.equals("-l")){
                 String fileName = args[3];
-                
-
-
                 switch (operation) {
                     case "-u":
                             System.out.println("Upload Requested: " + fileName);
@@ -95,10 +88,14 @@ public class Client {
                             System.out.println("=====================");
                             sendMessage("CMD|2|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE DOWNLOAD");
                             sendMessage("DAT|2|" + socket.getInetAddress() + "|" + socket.getPort(),fileName);
-                            if(permission.equals("KEY")){
-                                sendMessage("DAT|2|" + socket.getInetAddress() + "|" + socket.getPort(),key);    
-                            } 
-                            protocol.receiveFile(fileName);
+                            if(args.length > 4){
+                                sendMessage("DAT|2|" + socket.getInetAddress() + "|" + socket.getPort(),key); 
+                                protocol.receivePrivateFile(fileName);   
+                            }
+                            else{
+                                protocol.receiveFile(fileName); 
+                            }
+                            
                             break;
                 }
             }

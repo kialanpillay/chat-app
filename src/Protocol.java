@@ -58,13 +58,13 @@ public class Protocol {
         }
     }
 
-    public void receiveFile(String fileName) throws IOException {
+    public void receivePrivateFile(String fileName) throws IOException {
         String hKey = inStream.readLine();
         assert(hKey.contains("CTRL|2"));
         String bKey = inStream.readLine();         
         System.out.println(bKey);
         
-        if(bKey.equals("VALID KEY")||bKey.equals("PUBLIC")){
+        if(bKey.equals("VALID KEY")){
             try {
                 int bytesRead = 0;
                 DataInputStream clientData = new DataInputStream(socket.getInputStream());
@@ -86,6 +86,7 @@ public class Protocol {
                 inStream.close();
                 
             } catch (IOException ex) {
+                System.out.println(ex);
                 sendMessage("CTRL|2|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR RECEIVED");
                 System.err.println("File " + fileName + " does not exist on server!");
                 ps.close();
@@ -104,6 +105,37 @@ public class Protocol {
             ps.close();
             inStream.close();
         }
+    }
+
+    public void receiveFile(String fileName) throws IOException {
+            try {
+                int bytesRead = 0;
+                DataInputStream clientData = new DataInputStream(socket.getInputStream());
+                String header = clientData.readUTF(); //retrieve header from client
+                assert(header.contains("DAT|2")); //assert that we are receiving file data
+                fileName = clientData.readUTF();
+                OutputStream output = new FileOutputStream(("received_from_server_" + fileName));
+                long size = clientData.readLong();
+                byte[] buffer = new byte[1024];
+                while (size > 0 && (bytesRead = clientData.read(buffer, 0, (int) Math.min(buffer.length, size))) != -1) {
+                    output.write(buffer, 0, bytesRead);
+                    size -= bytesRead;
+                }
+                sendMessage("CTRL|2|" + socket.getInetAddress() + "|" + socket.getPort(),"DOWNLOAD RECEIVED");
+                System.out.println("File " + fileName + " received from Server.");
+
+                output.close();
+                ps.close();
+                inStream.close();
+                
+            } catch (IOException ex) {
+                System.out.println(ex);
+                sendMessage("CTRL|2|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR RECEIVED");
+                System.err.println("File " + fileName + " does not exist on server!");
+                ps.close();
+                inStream.close();
+            }
+        
     }
 
     public void listFiles() throws IOException {

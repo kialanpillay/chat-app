@@ -32,8 +32,6 @@ public class Connection implements Runnable {
             assert(bodyRequest.contains("INITIATE")); //Check if body of message contains initiate operation.
             
             
-
-
                 switch (operation) {
                     case "1":
                         sendMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"UPLOAD OPERATION ACKNOWLEDGED");
@@ -42,25 +40,44 @@ public class Connection implements Runnable {
                         String hPermission=in.readLine();
                         assert(hPermission.contains("DAT|1"));
                         String bPermission = in.readLine();
-                        Server.permissions.add(bPermission);
-                    
+                        String hKey, bKey = "";
+             
                         createMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"FILE PERMISSION RECEIVED");
                         if(bPermission.equalsIgnoreCase("Key")){
-                            String hKey = in.readLine();
+                            hKey = in.readLine();
                             assert(hKey.contains("DAT|1"));
-                            String bKey = in.readLine();
-                            Server.keys.add(bKey);
-
+                            bKey = in.readLine();
                             createMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"FILE KEY RECEIVED ");
                         }
-                        else{
-                            Server.keys.add("0");
+
+                        String filename = receiveFile();
+                        if(Server.fileNames.contains(filename)){
+                            int index = getFileIndex(filename);
+                            Server.permissions.set(index,bPermission);
+                            if(bPermission.equalsIgnoreCase("Key")){
+                                Server.keys.set(index,bKey);
+                            }
+                            else{
+                                Server.keys.set(index,"0");
+                            }
 
                         }
-                        receiveFile();
+                        else if(!filename.equals("")){
+                            Server.fileNames.add(filename);
+                            Server.permissions.add(bPermission);
+                            if(bPermission.equalsIgnoreCase("Key")){
+                                Server.keys.add(bKey);
+                            }
+                            else{
+                                Server.keys.add("0");
+                            }
+                        }
+
                         Server.writeFile();
-                        sendMessage("CMD|0|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
+
+                        sendMessage("CMD|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                         break;
+
                     case "2":
                         createMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"DOWNLOAD OPERATION ACKNOWLEDGED");
                         String fileName = "";
@@ -68,12 +85,14 @@ public class Connection implements Runnable {
                         if(hFile.contains("DAT|2")){
                             fileName = in.readLine();
                             createMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"FILE NAME RECEIVED");
+
                             String filePermission = checkPermission(fileName);
                             
                             if(filePermission.equalsIgnoreCase("KEY")){
-                                String hKey = in.readLine();
+                                hKey = in.readLine();
                                 assert(hKey.contains("DAT|2"));
-                                String bKey = in.readLine();
+                                bKey = in.readLine();
+
                                 if(verifyKey(bKey, fileName)){
                                     sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"VALID KEY");
                                     sendFile(fileName);
@@ -94,8 +113,7 @@ public class Connection implements Runnable {
                                 sendMessage("CMD|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                                 break;
                             }
-                            else{
-                                sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"PUBLIC");
+                            else if(filePermission.equalsIgnoreCase("PUB")) {
                                 sendFile(fileName);
                                 sendMessage("CMD|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                                 break;
@@ -106,7 +124,7 @@ public class Connection implements Runnable {
                     case "3":
                         createMessage("CTRL|3|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"QUERY OPERATION ACKNOWLEDGED");
                         listFiles();
-                        sendMessage("CMD|3|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
+                        createMessage("CMD|3|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                         break;
                     default:
                         in.close();
@@ -124,14 +142,13 @@ public class Connection implements Runnable {
         }
     }
 
-    public void receiveFile() throws IOException { //upload-saving key and permission above try
+    public String receiveFile() throws IOException {
         try {
             int bytesRead;
 
             DataInputStream clientData = new DataInputStream(clientSocket.getInputStream());
 
             String fileName = clientData.readUTF();
-            Server.fileNames.add(fileName);
             OutputStream output = new FileOutputStream("server/"+fileName);
             long size = clientData.readLong();
             byte[] buffer = new byte[1024];
@@ -145,13 +162,15 @@ public class Connection implements Runnable {
 
             clientData.close();
             output.close();
-
+            
+            return fileName;
             
         } catch (IOException ex) {
             sendMessage("CMD|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"ERROR RECEIVED");
             System.err.println("Client error. Connection closed at port " + clientSocket.getPort());
-            
+            return "";
         }
+        
     }
 
     public void sendFile(String fileName) throws IOException {
@@ -182,6 +201,7 @@ public class Connection implements Runnable {
             }
             dis.close();
         } catch (Exception e) {
+            System.out.println(e);
             sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"404 NOT FOUND");
             System.err.println("404 Error");
 
