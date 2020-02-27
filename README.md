@@ -13,7 +13,7 @@ Alternatively
 * ``cd ..`` (if compiling manually)
 * Execute ```java src/Server 8080``` in the first tab.
 * In the second tab, the general format is ```java src/Client <IP Address> <Port Number> <-Flag> <File> <Permission> [Key]```:
-* Note: [] indications option arguments, <> are mandatory arugments.
+* Note: [] indicates optional arguments, <> are mandatory arugments.
     * ```java src/Client 127.0.0.1 8080 -u yourfile.txt (--public/--visible) ``` to upload a file (choosing the relevant permission).
     * ```java src/Client 127.0.0.1 8080 -u yourfile.txt --private yoursecretkey ``` to upload a file privately
     * ```java src/Client 127.0.0.1 8080 -d yourfile.txt``` to download a file.
