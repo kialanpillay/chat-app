@@ -16,10 +16,16 @@ public class Connection implements Runnable {
     private BufferedReader in = null;
     private PrintStream ps;
 
+    /**Constructor for Connection class
+     * 
+     * @param client The clients socket
+     */
     public Connection(Socket client) {
         this.clientSocket = client;
     }
-
+/** Spawns new thread for each client socket
+ * 
+ */
     @Override
     public void run() {
         try {
@@ -161,7 +167,11 @@ public class Connection implements Runnable {
             Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
+/**Receiving an upload from the client
+ * 
+ * @return  A string representing the file name being uploaded.
+ * @throws IOException File not uploaded (received)
+ */
     public String receiveFile() throws IOException {
         try {
             int bytesRead;
@@ -192,7 +202,12 @@ public class Connection implements Runnable {
         }
         
     }
-
+/** Sending a file to the client for a download request
+ * 
+ * @param fileName Name of file being sent for a client download
+ * @param access Status of the files permission property
+ * @throws IOException File could not be sent
+ */
     public void sendFile(String fileName, String access) throws IOException {
         try {
             if(access.equals("DENIED")){
@@ -235,7 +250,10 @@ public class Connection implements Runnable {
 
         } 
     }
-
+/**Lists all files on the server that have public/visible permissions
+ * 
+ * @throws IOException Files could not be retrieved.
+ */
     public void listFiles() throws IOException {
         try {
                 String list = "";
@@ -279,6 +297,11 @@ public class Connection implements Runnable {
             System.err.println("Error retrieving files!");
         } 
     }
+    /** Getting all information on a specific file.
+     * 
+     * @param fileName file that is being queried.
+     * @throws IOException File information could not be accessed.
+     */
     public void queryFile(String fileName) throws IOException {
         try {
                 String details = "";
@@ -327,11 +350,15 @@ public class Connection implements Runnable {
 
         } catch (Exception e) {
             sendMessage("CTRL|4|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"404");
-            System.err.println("Error retrieving files!");
+            System.err.println("Error accessing file information!");
         } 
     }
     
-    
+    /** Message to be sent to the printstream.
+     * 
+     * @param header consists of format MESSAGETYPE|OPERATION(number)|RECIPIENT| PORT  
+     * @param body consists of OPERATION(text)/data
+     */
     public void sendMessage(String header, String body){
         Message m = new Message(header,body);
         ps.println(m.getHeader());
@@ -339,10 +366,19 @@ public class Connection implements Runnable {
         ps.flush();
     }
 
+    /**Creating a message
+     * 
+     * @param header consists of format MESSAGETYPE|OPERATION(number)|RECIPIENT| PORT 
+     * @param body consists of OPERATION(text)/data
+     */
     public void createMessage(String header, String body){
         Message m = new Message(header,body);
     }
-
+/**Checking for the index of the file specified in an arrayList.
+ * 
+ * @param filename Name of file whose index has to be checked.
+ * @return An interger of the files specified index.
+ */
     public int getFileIndex(String filename){
        String FileName = filename;
        int fileIndex=0;
@@ -355,7 +391,11 @@ public class Connection implements Runnable {
        return fileIndex;
 
     }
-
+/**Checking permission of specified file
+ * 
+ * @param filename Name of file whose permission has to be checked.
+ * @return A string of the files permission (VIS,PUB,KEY)
+ */
     public String checkPermission(String filename){
        String FileName = filename;
        int fileIndex = getFileIndex(FileName);
@@ -364,6 +404,12 @@ public class Connection implements Runnable {
 
 
     }
+    /** Checking if the clients key matches the files key to access file
+     * 
+     * @param key Secret Key from client.
+     * @param filename Name of file to be accessed by key.
+     * @return Boolean value if the key is correct/incorrect.
+     */
     public boolean verifyKey(String key,String filename){
         String clientKey = key;
         String FileName = filename;

@@ -7,21 +7,32 @@
  */
 
 package src;
-
+/**Constructor for message class
+ * 
+ */
 public class Message{
 
     private String header;
     private Object body;
-
+/**Constructing a message 
+ * 
+ */
     public Message(String header, Object body){
         this.header = header;
         this.body = body;
     }
-
+    
+/** Getting the header of a message
+ * 
+ * @return the header of the message as a string
+ */
     public String getHeader(){
         return header;
     }
-
+/** Getting the body of a message
+ * 
+ * @return the body of a message as an object
+ */
     public Object getBody(){
         return body;
     }

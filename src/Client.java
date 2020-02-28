@@ -133,14 +133,22 @@ public class Client {
             
     }
     }
-
+/**Message to be sent to the printstream.
+ * 
+ * @param header consists of format MESSAGETYPE|OPERATION(number)|RECIPIENT| PORT 
+ * @param body consists of OPERATION(text)/data
+ */
     public static void sendMessage(String header, String body){
         Message m = new Message(header,body);
         os.println(m.getHeader());
         os.println(m.getBody());
         os.flush();
     }
-
+/** Creating message
+ * 
+ * @param header consists of format MESSAGETYPE|OPERATION(number)|RECIPIENT| PORT 
+ * @param body consists of OPERATION(text)/data
+ */
     public static void createMessage(String header, String body){
         Message m = new Message(header,body);
     }

@@ -65,7 +65,9 @@ public class Server{
         System.exit(0);
     }
 
-
+/**Writing files from the  files array to a textfile
+ * 
+ */
     public static void writeFile(){
         try{
             FileWriter writer = new FileWriter("server/meta.txt",false);
@@ -83,7 +85,10 @@ public class Server{
             e.printStackTrace();
         }
     }
-
+/**
+ * Reading files information from the textfile to populate the arrayLists.
+ * @throws IOException File cant be found
+ */
     public static void readFile() throws IOException {
         
         try{Scanner f  = new Scanner(new File("server/meta.txt"));

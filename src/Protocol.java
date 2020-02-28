@@ -9,12 +9,22 @@ public class Protocol {
     private BufferedReader inStream;
     private PrintStream ps;
 
-
+/**Constructor for Protocol Class
+ * 
+ * @param socket client socket
+ * @param in BufferredReader used to read text for an input stream
+ * @param ps PrintStream allows data to be written to an output stream
+ */
     public Protocol(Socket socket, BufferedReader in, PrintStream ps) {
         this.socket = socket;
         this.inStream = in;
         this.ps = ps;
     }
+    /** Sending file to server to be uploaded
+     * 
+     * @param file File to be uploaded
+     * @throws IOException There was an error while uploading the file
+     */
 
     public void sendFile(File file) throws IOException {
         
@@ -57,7 +67,11 @@ public class Protocol {
             }
         }
     }
-
+/** Receiving ( downloading) a private access file
+ * 
+ * @param fileName File to be downloaded.
+ * @throws IOException Error thrown as file to be downloaded does not exist on server.
+ */
     public void receivePrivateFile(String fileName) throws IOException {
         String hKey = inStream.readLine();
         assert(hKey.contains("CTRL|2"));
@@ -99,7 +113,11 @@ public class Protocol {
             inStream.close();
         } 
     }
-
+/** Downloading / receiving a file from the server
+ * 
+ * @param fileName Name of file to be downloaded from server
+ * @throws IOException Error thrown as file to be downloaded does not exist on server.
+ */
     public void receiveFile(String fileName) throws IOException {
             try {
                 int bytesRead = 0;
@@ -140,6 +158,10 @@ public class Protocol {
 
         
     }
+    /** Method to receive a list of all files on the server
+     * 
+     * @throws IOException Error thrown when files from the server can not be retrieved. 
+     */
 
     public void listFiles() throws IOException {
             System.out.println("Available Files");
@@ -171,7 +193,10 @@ public class Protocol {
             System.out.println("\n");
        
     }
-
+/** Method to recieve information on specific file
+ * 
+ * @throws IOException  Error thrown when information on file can not be retrieved.
+ */
     public void queryFile() throws IOException {
         System.out.println(String.format("%-20s%-15s%-25s%-15s", "File Name", "Size", "Last Modified","Permission"));
         for (int i=0; i<70; i++){
@@ -190,20 +215,29 @@ public class Protocol {
             inStream.close();
         } catch (IOException e) {
             sendMessage("CTRL|4|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR RECEIVED");
-            System.err.println("Error retrieving files from Server!");
+            System.err.println("Error retrieving file information from Server!");
             ps.close();
             inStream.close();
         }
         System.out.println("\n");
    
 }
-
+/** Message to be sent to the printstream.
+ * 
+ * @param header consists of format MESSAGETYPE|OPERATION(number)|RECIPIENT| PORT  
+ * @param body consists of OPERATION(text)/data
+ */
     public void sendMessage(String header, String body){
         Message m = new Message(header,body);
         ps.println(m.getHeader());
         ps.println(m.getBody());
         ps.flush();
     }
+    /** Creating a message
+     * 
+     * @param header  consists of format MESSAGETYPE|OPERATION(number)|RECIPIENT| PORT 
+     * @param body consists of OPERATION(text)/data
+     */
 
     public void createMessage(String header, String body){
         Message m = new Message(header,body);
