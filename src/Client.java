@@ -26,10 +26,12 @@ public class Client {
     public static void main(String[] args) throws IOException {
 
         if (args.length < 3) {
-            System.err.println("Incorrect number of arguments!");
+            System.err.println("Incorrect number of arguments!"); //Error handling
             System.exit(1);
         } 
         else {
+
+            //Argument Extraction
             port = Integer.parseInt(args[1]);
             operation = args[2];
             String permission = "";
@@ -41,6 +43,7 @@ public class Client {
                     System.exit(1);
                 }
                 permission=args[4];
+                //Parsing the permission argument
                 if(permission.contains("public")){
                     permission = "PUB";
                 }
@@ -66,8 +69,8 @@ public class Client {
             }
             InetAddress address = InetAddress.getByName(args[0]);
             try {
-                socket = new Socket(address, port);
-                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                socket = new Socket(address, port); //Creating socket
+                in = new BufferedReader(new InputStreamReader(socket.getInputStream())); //Retrieving server InputStream
                 os = new PrintStream(socket.getOutputStream());
                 protocol = new Protocol(socket, in, os);
             } catch (Exception e) {
@@ -75,13 +78,13 @@ public class Client {
                 System.exit(1);
             }
 
-
+            //Client Requests
             System.out.println("FileShare Application");
             System.out.println("=====================");
             System.out.println("Server IP Address: " + address);
             System.out.println("Server Port: " + port);
             if(!operation.equals("-l")){
-                String fileName = args[3];
+                String fileName = args[3]; //Retrieve filename
                 switch (operation) {
                     case "-u":
                             System.out.println("Upload Requested: " + fileName);
@@ -90,7 +93,7 @@ public class Client {
                             sendMessage("DAT|1|" + socket.getInetAddress() + "|" + socket.getPort(),permission); 
                             if(permission.equals("KEY")){
                                 sendMessage("DAT|1|" + socket.getInetAddress() + "|" + socket.getPort(),key);    
-                            }     
+                            }//Send message with shared secret key    
                             protocol.sendFile(new File(fileName));
                             
                             break;
@@ -101,7 +104,8 @@ public class Client {
                             sendMessage("DAT|2|" + socket.getInetAddress() + "|" + socket.getPort(),fileName);
                             if(args.length > 4){
                                 sendMessage("DAT|2|" + socket.getInetAddress() + "|" + socket.getPort(),key); 
-                                protocol.receivePrivateFile(fileName);   
+                                protocol.receivePrivateFile(fileName);
+                                //Method called if downloading a private file with a shared key     
                             }
                             else{
                                 protocol.receiveFile(fileName); 
@@ -111,7 +115,7 @@ public class Client {
                 }
             }
             else{
-                if(args.length > 3){
+                if(args.length > 3){ //Query Operation for specific file
                     String fileName = args[3];
                     System.out.println("Server Query Requested: " + fileName);
                     System.out.println("=====================");
@@ -119,7 +123,7 @@ public class Client {
                     sendMessage("DAT|4|" + socket.getInetAddress() + "|" + socket.getPort(),fileName);
                     protocol.queryFile();
                 }
-                else{
+                else{ //Standard Server Query
                     System.out.println("Server Query Requested: ");
                     System.out.println("=====================");
                     sendMessage("CMD|3|" + socket.getInetAddress() + "|" + socket.getPort(),"INITIATE QUERY");

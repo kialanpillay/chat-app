@@ -14,6 +14,7 @@ import java.util.*;
 
 public class Server{
     
+    //Private data members
     private static int port;
     private static Socket clientSocket = null;
     private static ServerSocket serverSocket = null;
@@ -23,7 +24,7 @@ public class Server{
     public static void main (String [] args ) throws IOException {
 
 
-        if(args.length < 1){
+        if(args.length < 1){ //Error handling
             System.out.println("Incorrect number of arguments!");
             System.exit(1);
             
@@ -31,12 +32,12 @@ public class Server{
         else{
             port = Integer.parseInt(args[0]);
             try {
-                serverSocket = new ServerSocket(port);
+                serverSocket = new ServerSocket(port); //Create server socket
                 System.out.println("FileShare Server started at port " + port);
 
-                File file = new File("server");
+                File file = new File("server"); //Create server local directory
                 file.mkdir();
-                readFile();
+                readFile(); //Read in metadata file
 
             } catch (Exception e) {
                 System.err.println("Port already in use.");
@@ -45,10 +46,10 @@ public class Server{
                 
             while (true) {
                 try {
-                    clientSocket = serverSocket.accept();
+                    clientSocket = serverSocket.accept(); //Accept a client connection
                     System.out.println("Accepted connection : " + clientSocket);
 
-                    Thread t = new Thread(new Connection(clientSocket));
+                    Thread t = new Thread(new Connection(clientSocket)); //Spawn a new thread to handle client request
 
                     t.start();
                     writeFile();
@@ -93,13 +94,13 @@ public class Server{
         
         try{Scanner f  = new Scanner(new File("server/meta.txt"));
 
-            while(f.hasNext()){
+            while(f.hasNext()){ //String processing
                 String line = f.nextLine();
                 int firstComma = line.indexOf(",");
                 String fileName = line.substring(0,firstComma);
                 String permission = line.substring(firstComma+1, firstComma+4);
                 String key = line.substring(firstComma+5,line.length());
-                fileNames.add(fileName);
+                fileNames.add(fileName); //Storage of retrieved data
                 permissions.add(permission);
                 keys.add(key);
             }

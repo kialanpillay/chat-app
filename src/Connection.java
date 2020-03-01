@@ -21,7 +21,7 @@ public class Connection implements Runnable {
      * @param client The clients socket
      */
     public Connection(Socket client) {
-        this.clientSocket = client;
+        this.clientSocket = client; 
     }
 /** Spawns new thread for each client socket
  * 
@@ -39,23 +39,23 @@ public class Connection implements Runnable {
             
             
                 switch (operation) {
-                    case "1":
+                    case "1": //Upload
                         sendMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"UPLOAD OPERATION ACKNOWLEDGED");
                         
 
-                        String hPermission=in.readLine();
-                        assert(hPermission.contains("DAT|1"));
+                        String hPermission=in.readLine(); //Receive permissions message from client
+                        assert(hPermission.contains("DAT|1")); //Assert that a permission value is being received
                         String bPermission = in.readLine();
                         String hKey, bKey = "";
              
                         createMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"FILE PERMISSION RECEIVED");
-                        if(bPermission.equalsIgnoreCase("Key")){
+                        if(bPermission.equalsIgnoreCase("Key")){ //If a privat upload is requested
                             hKey = in.readLine();
                             assert(hKey.contains("DAT|1"));
                             bKey = in.readLine();
                             createMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"FILE KEY RECEIVED ");
                         }
-
+                        //Adds metadata to relevant data members in the Server class
                         String filename = receiveFile();
                         if(Server.fileNames.contains(filename)){
                             int index = getFileIndex(filename);
@@ -84,7 +84,7 @@ public class Connection implements Runnable {
                         sendMessage("CMD|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                         break;
 
-                    case "2":
+                    case "2": //Download
                         createMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"DOWNLOAD OPERATION ACKNOWLEDGED");
                         String fileName = "";
                         String hFile = in.readLine();
@@ -92,14 +92,14 @@ public class Connection implements Runnable {
                             fileName = in.readLine();
                             createMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"FILE NAME RECEIVED");
 
-                            if(!Server.fileNames.contains(fileName)){
-                                sendFile(fileName, "");
+                            if(!Server.fileNames.contains(fileName)){ //If file does not exist
+                                sendFile(fileName, ""); //No access specified
                                 sendMessage("CMD|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                                 break;
                             }
                             else{
 
-                                String filePermission = checkPermission(fileName);
+                                String filePermission = checkPermission(fileName); //Get permission from metadata store
                                 
                                 if(filePermission.equalsIgnoreCase("KEY")){
                                     hKey = in.readLine();
@@ -120,7 +120,7 @@ public class Connection implements Runnable {
                                     }
             
                                 }
-                                else if(filePermission.equalsIgnoreCase("VIS")){
+                                else if(filePermission.equalsIgnoreCase("VIS")){ //If file is not downloadable but visible
                                     sendFile(fileName, "DENIED");
                                     System.err.println("Access Violation: " + clientSocket);
                                     sendMessage("CMD|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
@@ -146,13 +146,13 @@ public class Connection implements Runnable {
                         String query = "";
                         String hQuery= in.readLine();
                         if(hQuery.contains("DAT|4")){
-                            query = in.readLine();
+                            query = in.readLine(); //Retrieve query from message body
                         }
                         queryFile(query);
                         createMessage("CMD|4|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"TERMINATE CONNECTION");
                         break;
 
-                    default:
+                    default: //Close all resources
                         in.close();
                         ps.close();
                         clientSocket.close();
@@ -179,7 +179,7 @@ public class Connection implements Runnable {
             DataInputStream clientData = new DataInputStream(clientSocket.getInputStream());
 
             String fileName = clientData.readUTF();
-            OutputStream output = new FileOutputStream("server/"+fileName);
+            OutputStream output = new FileOutputStream("server/"+fileName); //Write file to server location
             long size = clientData.readLong();
             byte[] buffer = new byte[1024];
             while (size > 0 && (bytesRead = clientData.read(buffer, 0, (int) Math.min(buffer.length, size))) != -1) {
@@ -224,13 +224,13 @@ public class Connection implements Runnable {
                 FileInputStream fis = new FileInputStream(file);
                 BufferedInputStream bis = new BufferedInputStream(fis);
                 DataInputStream dis = new DataInputStream(bis);
-                dis.readFully(dataBytes, 0, dataBytes.length);
-                OutputStream os = clientSocket.getOutputStream();
+                dis.readFully(dataBytes, 0, dataBytes.length); //Read file into InputStream
+                OutputStream os = clientSocket.getOutputStream(); //Get OutputStream of client for writing
                 DataOutputStream dos = new DataOutputStream(os);
-                dos.writeUTF("DAT|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort());
+                dos.writeUTF("DAT|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort()); //Message Header
                 dos.writeUTF(file.getName());
                 dos.writeLong(dataBytes.length);
-                dos.write(dataBytes, 0, dataBytes.length);
+                dos.write(dataBytes, 0, dataBytes.length); //Data Message Body
                 dos.flush();
 
                 //Get receipt message from client
@@ -244,7 +244,7 @@ public class Connection implements Runnable {
                 dis.close();
             }
             
-        } catch (Exception e) {
+        } catch (Exception e) { //Error handling
             sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"404 NOT FOUND");
             System.err.println("404 Error");
 
@@ -262,8 +262,9 @@ public class Connection implements Runnable {
                 File[]fileList = folder.listFiles();
                 for (File file: fileList){
                     if(!file.getName().startsWith(".") && !file.getName().equals("meta.txt") && !checkPermission(file.getName()).equals("KEY")){
+                        //If file is not hidden and not private
                         Date d = new Date(file.lastModified());
-                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss"); 
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss"); //Convert last modfied epoch seconds to a date
                         String permission = checkPermission(file.getName());
                         if(permission.equals("PUB")){
                             permission = "Public";
@@ -312,7 +313,7 @@ public class Connection implements Runnable {
                 for (File file: fileList){
                     if(file.getName().equals(fileName)){
                         Date d = new Date(file.lastModified());
-                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss"); 
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss"); //Convert last modfied epoch seconds to a date
                         String permission = checkPermission(file.getName());
                         if(permission.equals("PUB")){
                             permission = "Public";

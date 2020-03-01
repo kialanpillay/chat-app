@@ -33,23 +33,23 @@ public class Protocol {
         if(hAcknowledgment.contains("CTRL|1") && bAcknowledgment.contains("ACKNOWLEDGED")){
      
             try {
-                byte[] dataBytes = new byte[(int) file.length()];
+                byte[] dataBytes = new byte[(int) file.length()]; //Creates an empty array
                 FileInputStream fis = new FileInputStream(file);
                 BufferedInputStream bis = new BufferedInputStream(fis);
                 DataInputStream dis = new DataInputStream(bis);
-                dis.readFully(dataBytes, 0, dataBytes.length);
+                dis.readFully(dataBytes, 0, dataBytes.length); //Reads the file into the InputStream
                 OutputStream os = this.socket.getOutputStream();
                 DataOutputStream dos = new DataOutputStream(os);
                 dos.writeUTF(file.getName());
                 dos.writeLong(dataBytes.length);
-                dos.write(dataBytes, 0, dataBytes.length);
-                dos.flush();
+                dos.write(dataBytes, 0, dataBytes.length); //Writes file to OutputStream
+                dos.flush(); 
                 
                 String hResponse = inStream.readLine(); //Store Header AND Message of Server Response
                 String bResponse = inStream.readLine();
                 if(hResponse.contains("CTRL|1") && bResponse.contains("UPLOAD RECEIVED")){
                     createMessage("CTRL|1|" + socket.getInetAddress() + "|" + socket.getPort(),"UPLOAD OPERATION COMPLETE");
-                    System.out.println("File " + file.getName() + " sent to Server.");
+                    System.out.println("File " + file.getName() + " sent to Server."); //Check whether operation is succesful
                 }
                 else{
                     System.err.println("Error uploading file!");
@@ -59,7 +59,7 @@ public class Protocol {
                 ps.close();
                 inStream.close();
 
-            } catch (Exception e) {
+            } catch (Exception e) { //Error handling
                 sendMessage("CTRL|1|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR");
                 System.err.println("Error uploading file!. File does not exist.");
                 ps.close();
@@ -67,7 +67,7 @@ public class Protocol {
             }
         }
     }
-/** Receiving ( downloading) a private access file
+/** Receiving (downloading) a private file
  * 
  * @param fileName File to be downloaded.
  * @throws IOException Error thrown as file to be downloaded does not exist on server.
@@ -75,7 +75,7 @@ public class Protocol {
     public void receivePrivateFile(String fileName) throws IOException {
         String hKey = inStream.readLine();
         assert(hKey.contains("CTRL|2"));
-        String bKey = inStream.readLine();         
+        String bKey = inStream.readLine();  //Receive key message from server       
         
         if(bKey.equals("VALID KEY")){
             try {
@@ -87,9 +87,10 @@ public class Protocol {
                 OutputStream output = new FileOutputStream(("received_from_server_" + fileName));
                 long size = clientData.readLong();
                 byte[] buffer = new byte[1024];
+                //write file to the FileOutputStream while there is data in the buffer
                 while (size > 0 && (bytesRead = clientData.read(buffer, 0, (int) Math.min(buffer.length, size))) != -1) {
                     output.write(buffer, 0, bytesRead);
-                    size -= bytesRead;
+                    size -= bytesRead; 
                 }
                 sendMessage("CTRL|2|" + socket.getInetAddress() + "|" + socket.getPort(),"DOWNLOAD RECEIVED");
                 System.out.println("File " + fileName + " received from Server.");
@@ -124,14 +125,14 @@ public class Protocol {
                 DataInputStream clientData = new DataInputStream(socket.getInputStream());
                 String header = clientData.readUTF(); //retrieve header from client
                 
-                if(header.contains("CTRL|2")){
+                if(header.contains("CTRL|2")){ //Check to see if a error message is received
                     sendMessage("CTRL|2|" + socket.getInetAddress() + "|" + socket.getPort(),"ERROR RECEIVED");
                     System.err.println("Access denied for " + fileName + "!");
                     ps.close();
                     inStream.close();
                 }
                 else{
-                    fileName = clientData.readUTF();
+                    fileName = clientData.readUTF(); //Read filename
                     OutputStream output = new FileOutputStream(("received_from_server_" + fileName));
                     long size = clientData.readLong();
                     byte[] buffer = new byte[1024];
@@ -174,11 +175,12 @@ public class Protocol {
                 System.out.print("-");
             }
             System.out.println("");
+            //Client-side output formatting
             try {
                 DataInputStream clientData = new DataInputStream(socket.getInputStream());
                 long size = clientData.readLong();
                 byte[] data = new byte[(int)size];
-                clientData.readFully(data);
+                clientData.readFully(data); //Read in the Server data
                 String str= new String(data,"UTF-8");
                 System.out.println(str);
                 sendMessage("CTRL|3|" + socket.getInetAddress() + "|" + socket.getPort(),"QUERY RECEIVED");
