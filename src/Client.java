@@ -25,18 +25,37 @@ public class Client {
 
     public static void main(String[] args) throws IOException {
 
-        if (args.length < 3) {
+        if (args.length < 3 && !args[0].equals("--help")) {
             System.err.println("Incorrect number of arguments!"); //Error handling
             System.exit(1);
-        } 
+        }
+        else if(args[0].equals("--help")){ //Help Menu
+            System.out.println("Welcome to FileShare Help!");
+            System.out.println("");
+            System.out.println("General Command Format");
+            System.out.println("java src/Client <IP Address> <Port Number> <-Flag> <File> <Permission> [Key]");
+            System.out.println("");
+            System.out.println("Upload Example");
+            System.out.println("    java src/Client 127.0.0.1 8080 -u yourfile.txt (--public/--visible)");
+            System.out.println("Private File Upload Example");
+            System.out.println("    java src/Client 127.0.0.1 8080 -u yourfile.txt --private yoursecretkey");
+            System.out.println("Download Example");
+            System.out.println("    java src/Client 127.0.0.1 8080 -d yourfile.txt");
+            System.out.println("Download Private File Example");
+            System.out.println("    java src/Client 127.0.0.1 8080 -d yourfile.txt yoursecretkey");
+            System.out.println("List All Files Example");
+            System.out.println("    java src/Client 127.0.0.1 8080 -l");
+            System.out.println("Query File Example");
+            System.out.println("    java src/Client 127.0.0.1 8080 -l yourfile.txt");
+            System.exit(0);
+        }
         else {
-
             //Argument Extraction
             port = Integer.parseInt(args[1]);
             operation = args[2];
             String permission = "";
             String key = "";
-
+            
             if(operation.equals("-u")){
                 if(args.length < 5){
                     System.err.println("Incorrect number of arguments!");
