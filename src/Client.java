@@ -131,7 +131,7 @@ public class Client {
                 }
                 
             }
-            createMessage("CMD|0|" + socket.getInetAddress() + "|" + socket.getPort(),"CONNECTION TERMINATED");
+            sendMessage("CMD|0|" + socket.getInetAddress() + "|" + socket.getPort(),"CONNECTION TERMINATED");
             socket.close();
 
             
@@ -147,14 +147,6 @@ public class Client {
         os.println(m.getHeader());
         os.println(m.getBody());
         os.flush();
-    }
-/** Creating message
- * 
- * @param header consists of format MESSAGETYPE|OPERATION(number)|RECIPIENT| PORT 
- * @param body consists of OPERATION(text)/data
- */
-    public static void createMessage(String header, String body){
-        Message m = new Message(header,body);
     }
 
 

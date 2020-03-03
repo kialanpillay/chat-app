@@ -10,6 +10,8 @@ package src;
 
 import java.io.*;
 import java.net.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
 
 public class Server{
@@ -34,13 +36,14 @@ public class Server{
             try {
                 serverSocket = new ServerSocket(port); //Create server socket
                 System.out.println("FileShare Server started at port " + port);
-
+                writeLog("FileShare Server started at port " + port);
                 File file = new File("server"); //Create server local directory
                 file.mkdir();
                 readFile(); //Read in metadata file
 
             } catch (Exception e) {
                 System.err.println("Port already in use.");
+                writeLog("Port already in use.");
                 System.exit(1);
             }
                 
@@ -86,6 +89,21 @@ public class Server{
             e.printStackTrace();
         }
     }
+/**Writing terminal output to internal log file.
+ * 
+ */
+public static void writeLog(String log){
+    String datetime = LocalDate.now() + " " +  LocalTime.now();
+    try{
+        FileWriter writer = new FileWriter("server/log.txt",true);
+        writer.write(datetime + " - " + log+"\n");
+        writer.close();
+    }
+    catch(IOException e){
+        e.printStackTrace();
+    }
+}
+/**
 /**
  * Reading files information from the textfile to populate the arrayLists.
  * @throws IOException File cant be found

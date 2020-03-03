@@ -48,7 +48,7 @@ public class Protocol {
                 String hResponse = inStream.readLine(); //Store Header AND Message of Server Response
                 String bResponse = inStream.readLine();
                 if(hResponse.contains("CTRL|1") && bResponse.contains("UPLOAD RECEIVED")){
-                    createMessage("CTRL|1|" + socket.getInetAddress() + "|" + socket.getPort(),"UPLOAD OPERATION COMPLETE");
+                    sendMessage("CTRL|1|" + socket.getInetAddress() + "|" + socket.getPort(),"UPLOAD OPERATION COMPLETE");
                     System.out.println("File " + file.getName() + " sent to Server."); //Check whether operation is succesful
                 }
                 else{
@@ -234,15 +234,6 @@ public class Protocol {
         ps.println(m.getHeader());
         ps.println(m.getBody());
         ps.flush();
-    }
-    /** Creating a message
-     * 
-     * @param header  consists of format MESSAGETYPE|OPERATION(number)|RECIPIENT| PORT 
-     * @param body consists of OPERATION(text)/data
-     */
-
-    public void createMessage(String header, String body){
-        Message m = new Message(header,body);
     }
 
 }

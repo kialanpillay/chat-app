@@ -188,7 +188,8 @@ public class Connection implements Runnable {
             }
 
             sendMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"UPLOAD RECEIVED");
-            System.out.println("File " + fileName + " received from client.");
+            System.out.println("File " + fileName + " received from client at port " + clientSocket.getPort());
+            Server.writeLog("File " + fileName + " received from client at port " + clientSocket.getPort());
 
             clientData.close();
             output.close();
@@ -198,6 +199,7 @@ public class Connection implements Runnable {
         } catch (IOException ex) {
             sendMessage("CMD|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"ERROR RECEIVED");
             System.err.println("Client error. Connection closed at port " + clientSocket.getPort());
+            Server.writeLog("Client error. Connection closed at port " + clientSocket.getPort());
             return "";
         }
         
@@ -240,6 +242,7 @@ public class Connection implements Runnable {
                 
                     createMessage("CTRL|1|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"DOWNLOAD OPERATION COMPLETE");
                     System.out.println("File " + fileName + " sent to client at port " + clientSocket.getPort());
+                    Server.writeLog("File " + fileName + " sent to client at port " + clientSocket.getPort());
                 }
                 dis.close();
             }
@@ -247,6 +250,7 @@ public class Connection implements Runnable {
         } catch (Exception e) { //Error handling
             sendMessage("CTRL|2|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"404 NOT FOUND");
             System.err.println("404 Error");
+            Server.writeLog("404 Error");
 
         } 
     }
@@ -261,7 +265,7 @@ public class Connection implements Runnable {
                 File folder = new File("server");
                 File[]fileList = folder.listFiles();
                 for (File file: fileList){
-                    if(!file.getName().startsWith(".") && !file.getName().equals("meta.txt") && !checkPermission(file.getName()).equals("KEY")){
+                    if(!file.getName().startsWith(".") && !file.getName().equals("meta.txt") && !file.getName().equals("log.txt")  && !checkPermission(file.getName()).equals("KEY")){
                         //If file is not hidden and not private
                         Date d = new Date(file.lastModified());
                         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss"); //Convert last modfied epoch seconds to a date
@@ -289,6 +293,8 @@ public class Connection implements Runnable {
                 if(hResponse.contains("CTRL|3") && bResponse.contains("QUERY RECEIVED")){
                     createMessage("CTRL|3|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"QUERY OPERATION COMPLETE");
                     System.out.println("List of files sent to client at port " + clientSocket.getPort());
+                    Server.writeLog("List of files sent to client at port " + clientSocket.getPort());
+                    
                 }
                 
         
@@ -296,6 +302,7 @@ public class Connection implements Runnable {
         } catch (Exception e) {
             sendMessage("CTRL|3|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"404");
             System.err.println("Error retrieving files!");
+            Server.writeLog("Error retrieving files!");
         } 
     }
     /** Getting all information on a specific file.
@@ -345,6 +352,7 @@ public class Connection implements Runnable {
                 if(hResponse.contains("CTRL|4") && bResponse.contains("FILE QUERY RECEIVED")){
                     createMessage("CTRL|4|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"QUERY OPERATION COMPLETE");
                     System.out.println("File details sent to client at port " + clientSocket.getPort());
+                    Server.writeLog("File details sent to client at port " + clientSocket.getPort());
                 }
                 
         
@@ -352,6 +360,7 @@ public class Connection implements Runnable {
         } catch (Exception e) {
             sendMessage("CTRL|4|" + clientSocket.getInetAddress() + "|" + clientSocket.getPort(),"404");
             System.err.println("Error accessing file information!");
+            Server.writeLog("Error accessing file information!");
         } 
     }
     
